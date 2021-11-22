@@ -41,7 +41,7 @@ Install from [Github](https://github.com/ruirzma/osmsc)
 `pip install .` or `python setup.py install`
 
 ### Examples
-[OSMsc demonstration notebooks](https://github.com/ruirzma/osmsc-examples)
+[OSMsc demonstration notebooks](https://github.com/ruirzma/osmsc/tree/main/examples)
 
 ### Reference
     1. Geoff Boeing, OSMnx, https://github.com/gboeing/osmnx
