@@ -3,7 +3,7 @@ OSMsc
 =====
 *updated 15 Nov 2021*
 
-<font color=green size=4> This repo created an easy-to-use Python package, named OSMsc, to improve the availbliliy, consistency and generalizability of urban semantic data.</font>
+<font color=green size=4> This repo created an easy-to-use Python package, named OSMsc, to improve the availability, consistency and generalizability of urban semantic data.</font>
 
 
 

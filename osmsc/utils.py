@@ -92,11 +92,14 @@ def json_to_gdf(osm_json, data_type, tags = True, building_levels = False):
                     tags_list.append(element["tags"])
                 
                 # Polygon building:levels tag
-                if building_levels:
-                    if "building:levels" in element["tags"].keys():
-                        building_levels_list.append(int(float(element["tags"]["building:levels"])))
-                    else:
-                        building_levels_list.append(None)
+                try:# unknown tags 
+                    if building_levels:
+                        if "building:levels" in element["tags"].keys():
+                            building_levels_list.append(int(float(element["tags"]["building:levels"])))
+                        else:
+                            building_levels_list.append(None)
+                except:
+                    building_levels_list.append(None)
 
         if data_type == "Point":
             coords_list = []

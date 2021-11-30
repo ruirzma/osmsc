@@ -395,6 +395,8 @@ class city_json(object):
         ################# Building #################
         if self.building_gdf is not None:
             self.building_gdf = fill_nan_list_position(self.building_gdf,"within_UrbanPatch")
+            self.building_gdf = fill_nan_list_position(self.building_gdf,"Building_height")
+
             self.building_gdf = self.drop_extra_geom(self.building_gdf)
             self.cm = self.create_building_object()
 

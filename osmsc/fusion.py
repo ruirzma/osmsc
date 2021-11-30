@@ -162,7 +162,6 @@ def add_elevation(cityobject_gdf, elevation_dataset = "aster30m", step = 5):
     return cityobject_gdf
 
 
-
 def get_intersected_grid_gdf(cityobject_gdf, elevation_dataset = "aster30m", step = 5):
     """
     Mostly, add elevation to a grid
