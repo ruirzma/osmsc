@@ -202,6 +202,34 @@ def fill_nan_list_position(gdf,colName):
     
     return gdf
 
+
+def tailor_gdf_with_bbox(target_gdf_prj, bbox):
+    """
+    Tailor the target GeoDataFrame, usually for vegetation or waterbody objects
+
+    Parameters
+    ----------
+    target_gdf : GeoDataFrame
+        vegetation or waterbody GeoDataFrames
+    bbox : tuple
+        bbox --> (South, West, North, East) or (# minlat, minlon, maxlat, maxlon)
+
+
+    Returns
+    -------
+    GeoDataFrame
+    """
+    # create bbox GeoDataFrame
+    bbox_gdf = get_bbox_gdf(bbox)
+    # convert the crs
+    bbox_gdf_prj = ox.project_gdf(bbox_gdf)
+
+    # tailor the target_gdf
+    tailored_gdf = gpd.overlay(target_gdf_prj, bbox_gdf_prj, how="intersection")
+    
+    return tailored_gdf
+
+
 ################# for bbox #############################
 def bbox_from_gdf(gdf, buffer_value = 0.001):
     """
@@ -227,6 +255,56 @@ def bbox_from_gdf(gdf, buffer_value = 0.001):
     bbox = (South, West, North, East)
 
     return bbox
+
+def bbox_from_place_name(place_name):
+    """
+    Obtain bbox from place_name
+    bbox --> (South, West, North, East) or (# minlat, minlon, maxlat, maxlon)
+    Place name can be checked in https://nominatim.openstreetmap.org/ui/search.html
+    
+    Parameters
+    ----------
+    place_name : str
+
+    Returns
+    -------
+    Tuple
+    """
+    # get place ploygon
+    poly_gdf = ox.geocoder.geocode_to_gdf(place_name)
+    # get the bounds of this ploygon
+    bounds = poly_gdf.geometry.iloc[0].bounds
+    min_lon, min_lat, max_lon, max_lat  = list(bounds)
+    # create the bbox
+    bbox = (min_lat, min_lon, max_lat, max_lon)
+
+    return bbox
+
+def get_bbox_gdf(bbox):
+    """
+    Create bbox GeoDataFrame
+
+    Parameters
+    ----------
+    bbox : tuple
+        bbox --> (South, West, North, East) or (# minlat, minlon, maxlat, maxlon)
+
+
+    Returns
+    -------
+    GeoDataFrame
+    """
+
+    # create bbox geometry 
+    min_lat, min_lon, max_lat, max_lon = bbox
+    bbox_geometry = Polygon([(min_lon,min_lat),(min_lon,max_lat ),(max_lon, max_lat), (max_lon,min_lat)])
+
+    # create bbox GeoDataFrame
+    bbox_gdf = gpd.GeoDataFrame()
+    bbox_gdf["geometry"] = [bbox_geometry]
+    bbox_gdf.crs = "epsg:4326"
+
+    return bbox_gdf
 
 ################# for osm_json #############################
 def get_keys_from_osm_json(osm_json):

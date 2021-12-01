@@ -35,7 +35,7 @@ class building_group(polygon_group):
             # not including underground structure
 
             self.overpass_query = """
-                [out:json][timeout:50];
+                [out:json][timeout:5000];
                 ( way["building"][!"building:levels:underground"]""" + str(self.bbox) +  """; 
                 );
                 out geom;
@@ -84,6 +84,14 @@ class building_group(polygon_group):
         temp_gdf["Building_area"] = temp_gdf_prj["geometry"].area 
         temp_gdf["Building_perimeter"] = temp_gdf_prj["geometry"].length 
 
+        # If download building level from OSM
+        if building_levels:
+
+            # if building_levels tags is unavailable, assume it is 1
+            temp_gdf["building_levels"] = temp_gdf["building_levels"].fillna(1)
+            # assume level height is 3m
+            temp_gdf["Building_height"] = temp_gdf["building_levels"] * 3
+
         return temp_gdf
 
 class vegetation_group(polygon_group):
@@ -101,7 +109,7 @@ class vegetation_group(polygon_group):
         if not self.overpass_query:  
             #print("If necessary, please enter your VegetationGroup overpass api query!!")
             self.overpass_query = """
-                [out:json][timeout:50];
+                [out:json][timeout:5000];
                 ( way["leisure"~"park"]""" + str(self.bbox) +  """; 
                 way["landuse"~"grass"]""" + str(self.bbox) +  """; 
                 way["leisure"~"pitch"]""" + str(self.bbox) +  """; 
@@ -164,7 +172,7 @@ class waterbody_group(polygon_group):
         if not self.overpass_query:  
             #print("If necessary, please enter your WaterbodyGroup overpass api query!!")
             self.overpass_query = """
-                [out:json][timeout:50];
+                [out:json][timeout:5000];
                 ( way["leisure"~"ice_rink"]""" + str(self.bbox) +  """; 
                 way["landuse"~"swimming_pool"]""" + str(self.bbox) +  """; 
                 way["man_made"~"water_tower"]""" + str(self.bbox) +  """; 
@@ -319,7 +327,7 @@ class street_network(line_string_group):
             print("The default setting is to query all street, if necessary, please enter your StreetNetwork overpass api query!!")
 
             self.overpass_query = """
-                [out:json][timeout:50];
+                [out:json][timeout:5000];
                 ( way["highway"]["area"!~"yes"]""" + str(self.bbox) +  """; 
                 );
                 out geom;
@@ -454,7 +462,7 @@ class tagged_point_group(point_group):
             print("The default setting is to query tagged points, if necessary, please enter your TaggedPointGroup overpass api query!!")
 
             self.overpass_query = """
-                [out:json][timeout:50];
+                [out:json][timeout:5000];
                 ( 
                 node""" + str(self.bbox) +  """[~"."~"."]; 
                 );
