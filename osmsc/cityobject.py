@@ -5,6 +5,7 @@ import pandas as pd
 import geopandas as gpd
 import osmnx as ox
 from shapely.ops import polygonize
+import time
 
 from .utils import download, street_graph_from_gdf, graph_from_gdfs, json_to_gdf, streets_from_street_graph
 from .geogroup import point_group, polygon_group, line_string_group
@@ -34,15 +35,53 @@ class building_group(polygon_group):
             # print("The default setting is to query all buildings, if necessary, please enter your BuildingGroup overpass api query!!")
             # not including underground structure
 
+            # if self.bbox:
+            self.overpass_query = self.get_overpass_query()
+
+
+        # return data in JSON
+        return download(self.overpass_query) 
+
+    def get_overpass_query(self, lat = None, lon = None ):
+        """
+        Get overpass query content from bbox or polygon boundary
+
+        Parameters
+        ----------
+        lat : list
+            latitude list of  polygon boundary nodes
+            
+        lon : list
+            longitude list of  polygon boundary nodes
+
+        Returns
+        -------
+        String
+        """
+
+        if self.bbox:
+            # Default query
+            # query buildings with all kinds of tags
+            # key is "building"
             self.overpass_query = """
                 [out:json][timeout:5000];
                 ( way["building"][!"building:levels:underground"]""" + str(self.bbox) +  """; 
                 );
                 out geom;
-                """        
+                """       
         
-        # return data in JSON
-        return download(self.overpass_query) 
+        if self.place_name:
+            overpass_poly = ""
+            for i in range(len(lon)):
+                overpass_poly = overpass_poly + str(lat[i]) + " " + str(lon[i]) + " "
+
+            self.overpass_query = """[out:json][timeout:5000];
+                                ( way['building'][!"building:levels:underground"]
+                                (poly:'""" + str(overpass_poly.rstrip()) + """'); 
+                                );
+                                out geom;"""
+
+            return self.overpass_query
 
     def read_file(self):
         """
@@ -55,7 +94,7 @@ class building_group(polygon_group):
 
         return gpd.GeoDataFrame.from_file(self.file_path)
 
-    def get_gdf(self, tags = True, building_levels = False):
+    def get_gdf(self, tags = True, building_levels = False, height = False, sim_factor = 0.0005):
         """
         Obtain OSM data and save as GeoDataFrame.
 
@@ -69,13 +108,62 @@ class building_group(polygon_group):
             if True, need to download building level into current GeoDataFrame
             if False, the GeoDataFrame won't add OSM "building_levels" column.
 
+        height : bool
+            if True, need to download building height into current GeoDataFrame, 
+                    if OSM lacks such info, the default height is 3m
+            if False, the GeoDataFrame won't add OSM "Building_height" column.
+        
+        sim_factor : float
+            Factor of shapely geometry simplify function
+            If there are still downloading errors (returns nothing), pls choose a larger sim_factor.
+
         Returns
         -------
         GeoDataFrame
         """
+        # given place name exists
+        if self.place_name:
+            poly_gdf = ox.geocoder.geocode_to_gdf(self.place_name)
 
-        temp_gdf = json_to_gdf(osm_json= self.query(), data_type= self.data_type, 
-                            tags= tags, building_levels = building_levels) 
+            temp_gdf_1 = gpd.GeoDataFrame()
+
+            for i in range(len(poly_gdf.geometry.iloc[0])):
+                
+                lon, lat = poly_gdf.geometry.iloc[0][i].exterior.coords.xy
+                time.sleep( 5 )
+                
+                # Too many nodes would result in downloading error.
+                if len(lon) < 200:  
+                    #osm_json = get_osm_json_with_latlon(lat, lon)
+                    self.overpass_query = self.get_overpass_query( lat = lat, lon = lon )
+                    osm_json = download(self.overpass_query)
+                
+                # Need to be simplified
+                else: 
+                    lon, lat = poly_gdf.geometry.iloc[0][i].simplify(sim_factor).exterior.coords.xy
+                    self.overpass_query = self.get_overpass_query( lat = lat, lon = lon )
+                    osm_json = download(self.overpass_query)
+                
+                try: 
+                    temp_gdf_2 = json_to_gdf(osm_json= osm_json, data_type= "Polygon", 
+                                                tags = True, building_levels = False, height = True)
+                    temp_gdf_2["Building_height"] = temp_gdf_2["Building_height"].fillna(3) # 假设一层 层高3m
+
+                # osm_json is None
+                except: 
+                    temp_gdf_2 = gpd.GeoDataFrame()
+                
+                temp_gdf_1 = pd.concat([temp_gdf_1, temp_gdf_2], ignore_index=True)
+
+            temp_gdf = temp_gdf_1
+            # set crs
+            temp_gdf = gpd.GeoDataFrame(temp_gdf,crs='epsg:4326')
+
+        else:
+            temp_gdf = json_to_gdf(osm_json= self.query(), data_type= self.data_type, 
+                                tags= tags, building_levels = building_levels,
+                                height = height) 
+        
         # projection
         temp_gdf_prj = ox.project_gdf(temp_gdf)
 
@@ -92,6 +180,7 @@ class building_group(polygon_group):
             # assume level height is 3m
             temp_gdf["Building_height"] = temp_gdf["building_levels"] * 3
 
+
         return temp_gdf
 
 class vegetation_group(polygon_group):
@@ -106,8 +195,30 @@ class vegetation_group(polygon_group):
         -------
         JSON
         """
-        if not self.overpass_query:  
-            #print("If necessary, please enter your VegetationGroup overpass api query!!")
+        self.overpass_query = self.get_overpass_query()
+
+        # return data in JSON
+        return download(self.overpass_query) 
+
+    def get_overpass_query(self, lat = None, lon = None ):
+        """
+        Get overpass query content from bbox or polygon boundary
+
+        Parameters
+        ----------
+        lat : list
+            latitude list of  polygon boundary nodes
+            
+        lon : list
+            longitude list of  polygon boundary nodes
+
+        Returns
+        -------
+        String
+        """
+
+        if self.bbox:
+            # Default query
             self.overpass_query = """
                 [out:json][timeout:5000];
                 ( way["leisure"~"park"]""" + str(self.bbox) +  """; 
@@ -125,12 +236,28 @@ class vegetation_group(polygon_group):
                 
                 );
                 out geom;
+                """      
+        
+        if self.place_name:
+            overpass_poly = ""
+            for i in range(len(lon)):
+                overpass_poly = overpass_poly + str(lat[i]) + " " + str(lon[i]) + " "
+            
+            # Overpass API Docs
+            # https://dev.overpass-api.de/overpass-doc/en/criteria/per_tag.html
+            self.overpass_query = """
+                [out:json][timeout:5000];
+                ( way["leisure"~"^(park|garden|pitch|playground)"](poly:'""" + str(overpass_poly.rstrip()) +  """'); 
+                way["landuse"~"^(grass|farmyard|recreation_ground|meadow|cemetery)"](poly:'""" + str(overpass_poly.rstrip()) +  """'); 
+                way["natural"~"^(wetland|wood|scrub)"](poly:'""" + str(overpass_poly.rstrip()) +  """'); 
+
+                );
+                out geom;
                 """
 
-        # return data in JSON
-        return download(self.overpass_query) 
+            return self.overpass_query
 
-    def get_gdf(self, tags = True):
+    def get_gdf(self, tags = True, sim_factor = 0.0005):
         """
         Obtain OSM data and save as GeoDataFrame.
 
@@ -140,14 +267,52 @@ class vegetation_group(polygon_group):
             if False, the GeoDataFrame won't add OSM "tags" column.
             if True, need to extract tag info into current GeoDataFrame
 
+        sim_factor : float
+            Factor of shapely geometry simplify function
+            If there are still downloading errors (returns nothing), pls choose a larger sim_factor.
 
         Returns
         -------
         GeoDataFrame
         """
+        # given place name exists
+        if self.place_name:
+            poly_gdf = ox.geocoder.geocode_to_gdf(self.place_name)
 
-        temp_gdf = json_to_gdf(osm_json= self.query(), data_type= self.data_type, 
-                            tags= tags) 
+            temp_gdf_1 = gpd.GeoDataFrame()
+            for i in range(len(poly_gdf.geometry.iloc[0])):
+
+                time.sleep( 5 )
+                lon, lat = poly_gdf.geometry.iloc[0][i].exterior.coords.xy
+
+                # Too many nodes would result in downloading error.
+                if len(lon) < 50: 
+                    #osm_json = get_osm_json_with_latlon(lat, lon)
+                    self.overpass_query = self.get_overpass_query(lat, lon)
+                    osm_json = download(self.overpass_query)
+
+                # Need to be simplified
+                else: 
+                    lon, lat = poly_gdf.geometry.iloc[0][i].simplify(sim_factor).exterior.coords.xy
+                    self.overpass_query = self.get_overpass_query(lat, lon)
+                    osm_json = download(self.overpass_query)
+                
+                try: 
+                    temp_gdf_2 = json_to_gdf(osm_json= osm_json, data_type= "Polygon", 
+                                                tags = True, building_levels = False, height = False)
+
+                # osm_json is None
+                except: 
+                    temp_gdf_2 = gpd.GeoDataFrame()
+                temp_gdf_1 = pd.concat([temp_gdf_1, temp_gdf_2], ignore_index=True)
+
+            temp_gdf = temp_gdf_1
+            # set crs
+            temp_gdf = gpd.GeoDataFrame(temp_gdf,crs='epsg:4326')
+
+        else:
+            temp_gdf = json_to_gdf(osm_json= self.query(), data_type= self.data_type, 
+                                tags= tags) 
 
         temp_gdf_prj = ox.project_gdf(temp_gdf)
 
@@ -169,8 +334,30 @@ class waterbody_group(polygon_group):
         -------
         JSON
         """
-        if not self.overpass_query:  
-            #print("If necessary, please enter your WaterbodyGroup overpass api query!!")
+        self.overpass_query = self.get_overpass_query()
+
+        # return data in JSON        
+        return download(self.overpass_query)
+
+    def get_overpass_query(self, lat = None, lon = None ):
+        """
+        Get overpass query content from bbox or polygon boundary
+
+        Parameters
+        ----------
+        lat : list
+            latitude list of  polygon boundary nodes
+            
+        lon : list
+            longitude list of  polygon boundary nodes
+
+        Returns
+        -------
+        String
+        """
+
+        if self.bbox:
+            # Default query
             self.overpass_query = """
                 [out:json][timeout:5000];
                 ( way["leisure"~"ice_rink"]""" + str(self.bbox) +  """; 
@@ -181,11 +368,28 @@ class waterbody_group(polygon_group):
 
                 );
                 out geom;
-                """
-        # return data in JSON        
-        return download(self.overpass_query)
+                """   
+        
+        if self.place_name:
+            overpass_poly = ""
+            for i in range(len(lon)):
+                overpass_poly = overpass_poly + str(lat[i]) + " " + str(lon[i]) + " "
 
-    def get_gdf(self, tags = True):
+            self.overpass_query = """
+            [out:json][timeout:5000];
+            ( way["leisure"~"ice_rink"](poly:'""" + str(overpass_poly.rstrip()) +  """'); 
+            way["landuse"~"swimming_pool"](poly:'""" + str(overpass_poly.rstrip()) +  """'); 
+            way["man_made"~"water_tower"](poly:'""" + str(overpass_poly.rstrip()) +  """'); 
+            way["natural"~"water"](poly:'""" + str(overpass_poly.rstrip()) +  """'); 
+            way["reservoir"~"water_storage"](poly:'""" + str(overpass_poly.rstrip()) +  """'); 
+            
+            );
+            out geom;
+            """
+
+            return self.overpass_query
+
+    def get_gdf(self, tags = True, sim_factor = 0.0005):
         """
         Obtain OSM data and save as GeoDataFrame.
 
@@ -195,12 +399,50 @@ class waterbody_group(polygon_group):
             if False, the GeoDataFrame won't add OSM "tags" column.
             if True, need to extract tag info into current GeoDataFrame
 
+        sim_factor : float
+            Factor of shapely geometry simplify function
+            If there are still downloading errors (returns nothing), pls choose a larger sim_factor.
+
         Returns
         -------
         GeoDataFrame
         """
+        # given place name exists
+        if self.place_name:
+            poly_gdf = ox.geocoder.geocode_to_gdf(self.place_name)
 
-        temp_gdf = json_to_gdf(osm_json= self.query(), data_type= self.data_type, 
+            temp_gdf_1 = gpd.GeoDataFrame()
+            for i in range(len(poly_gdf.geometry.iloc[0])):
+                lon, lat = poly_gdf.geometry.iloc[0][i].exterior.coords.xy
+                time.sleep( 5 )
+
+                # Too many nodes would result in downloading error.
+                if len(lon) < 50:  
+                    #osm_json = get_osm_json_with_latlon(lat, lon)
+                    self.overpass_query = self.get_overpass_query(lat, lon)
+                    osm_json = download(self.overpass_query)
+
+                # Need to be simplified
+                else: 
+                    lon, lat = poly_gdf.geometry.iloc[0][i].simplify(sim_factor).exterior.coords.xy
+                    self.overpass_query = self.get_overpass_query(lat, lon)
+                    osm_json = download(self.overpass_query)
+            
+                try: 
+                    temp_gdf_2 = json_to_gdf(osm_json= osm_json, data_type= "Polygon", 
+                                                tags = True, building_levels = False, height = False)
+
+                # osm_json is None
+                except: 
+                    temp_gdf_2 = gpd.GeoDataFrame()
+                temp_gdf_1 = pd.concat([temp_gdf_1, temp_gdf_2], ignore_index=True)
+
+            temp_gdf = temp_gdf_1
+            # set crs
+            temp_gdf = gpd.GeoDataFrame(temp_gdf,crs='epsg:4326')
+
+        else:
+            temp_gdf = json_to_gdf(osm_json= self.query(), data_type= self.data_type, 
                             tags= tags) 
 
         temp_gdf_prj = ox.project_gdf(temp_gdf)
@@ -231,8 +473,10 @@ class transportation_group(polygon_group):
         -------
         GeoDataFrame
         """
-
-        building_gdf = building_group(bbox= self.bbox).get_gdf()
+        if self.bbox:
+            building_gdf = building_group(bbox= self.bbox).get_gdf()
+        if self.place_name:
+            building_gdf = building_group(place_name = self.place_name).get_gdf()
         # 
         street_graph = street_graph_from_gdf(building_gdf)
         # Street geometry is LineString       
@@ -259,9 +503,9 @@ class transportation_group(polygon_group):
         # re-project geometries to a projected CRS before buffer function
         street_temp_gdf_prj = ox.project_gdf(street_temp_gdf)
         # Assume street width is 3m and construct street outlines
-        street_gdf_prj["geometry"] = street_temp_gdf_prj["geometry"].buffer(street_width, cap_style = 3).exterior 
+        street_temp_gdf_prj["geometry"] = street_temp_gdf_prj["geometry"].buffer(street_width, cap_style = 3).exterior 
         # Polygon street objects
-        street_gdf_prj["geometry"] = list(polygonize(street_gdf_prj["geometry"]))
+        street_gdf_prj["geometry"] = list(polygonize(street_temp_gdf_prj["geometry"]))
         # set crs
         street_gdf_prj.crs = street_temp_gdf_prj.crs
         # Add osmscID column
@@ -284,7 +528,7 @@ class urban_patch_group(polygon_group):
         GeoDataFrame
         """
         # Download the street dataframe
-        street_gdf_prj = transportation_group(bbox= self.bbox, trans_type= self.trans_type).get_gdf_prj()
+        street_gdf_prj = transportation_group(bbox= self.bbox, place_name = self.place_name, trans_type= self.trans_type).get_gdf_prj()
         # Merged streets are the basis for generating blocks
         street_dis_geom = street_gdf_prj.dissolve().iloc[0].geometry       
         

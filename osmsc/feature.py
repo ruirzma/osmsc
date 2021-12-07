@@ -21,7 +21,7 @@ def add_spatial_semantics_attr(left_gdf,right_gdf,semColName):
         # As for both gdf, more detail cna be found in 
         # https://automating-gis-processes.github.io/CSC18/lessons/L4/spatial-join.html
 
-    semColName : string
+    semColName : string e.g. contains_Building or within Patch
         New column name
 
     Returns

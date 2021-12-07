@@ -33,7 +33,7 @@ def download(overpass_query):
     return osm_json 
 
 
-def json_to_gdf(osm_json, data_type, tags = True, building_levels = False):
+def json_to_gdf(osm_json, data_type, tags = True, building_levels = False, height = False):
     """
     Convert the json data into GeoDataFrame.
 
@@ -47,8 +47,8 @@ def json_to_gdf(osm_json, data_type, tags = True, building_levels = False):
         The final GeoDataFrame has "tags" column, that are downloaded from OSM
     building_levels : bool
         The final GeoDataFrame has "building_levels" column, that are downloaded from OSM
-    overpass_query : string
-        Customized overpass API
+    height : bool
+        The final GeoDataFrame has "height" column, that are downloaded from OSM
 
     Returns
     -------
@@ -64,6 +64,7 @@ def json_to_gdf(osm_json, data_type, tags = True, building_levels = False):
             osm_id = []
             tags_list = []
             building_levels_list = []
+            building_height_list = []
 
             for element in osm_json['elements']:
 
@@ -98,8 +99,15 @@ def json_to_gdf(osm_json, data_type, tags = True, building_levels = False):
                             building_levels_list.append(int(float(element["tags"]["building:levels"])))
                         else:
                             building_levels_list.append(None)
+                    if height:
+                        if "height" in element["tags"].keys():
+                            building_height_list.append(float(element["tags"]["height"]))
+                        else:
+                            building_height_list.append(None)                            
                 except:
                     building_levels_list.append(None)
+                    building_height_list.append(None)
+
 
         if data_type == "Point":
             coords_list = []
@@ -168,6 +176,8 @@ def json_to_gdf(osm_json, data_type, tags = True, building_levels = False):
         # Add "building_levels" column
         if building_levels:
             temp_gdf["building_levels"] = building_levels_list           
+        if height:
+            temp_gdf["Building_height"] = building_height_list
 
         return temp_gdf
 

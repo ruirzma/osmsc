@@ -8,7 +8,7 @@ class polygon_group(object):
     polygon_group class for urban polygon objects
     """
     def __init__(self, bbox = None , file_path = None, overpass_query = None,
-                trans_type = None):
+                trans_type = None, place_name = None):
 
         # bbox limits the study area
         # bbox --> (South, West, North, East)
@@ -17,6 +17,7 @@ class polygon_group(object):
         self.file_path = file_path
         self.data_type = "Polygon"
         self.trans_type = trans_type
+        self.place_name = place_name
     
 class point_group(object):
     """
