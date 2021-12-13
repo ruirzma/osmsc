@@ -16,7 +16,7 @@ class city_json(object):
     """
 
     def __init__(self, building_gdf = None , vegetation_gdf = None, 
-    waterbody_gdf = None, transportation_gdf = None, urban_patch_gdf = None):
+        waterbody_gdf = None, transportation_gdf = None, urban_patch_gdf = None):
 
         self.building_gdf = building_gdf
         self.vegetation_gdf = vegetation_gdf
@@ -104,6 +104,7 @@ class city_json(object):
             self.cm.cityobjects[buildingObject.id] = buildingObject
 
         return self.cm
+
 
     def create_vegetation_object(self):
         """

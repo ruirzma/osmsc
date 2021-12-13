@@ -364,11 +364,14 @@ def add_interlayer_vegetation_attr(UrbanPatch_gdf, Vegetation_gdf):
         for veg_ID in UrbanPatch_gdf["contains_Vegetation"][row_num]:
 
             try:
-
-                a_area = float(Vegetation_gdf[Vegetation_gdf["osmscID"] == veg_ID].Vegetation_area)
+                vey_geom = list(Vegetation_gdf[Vegetation_gdf["osmscID"]== veg_ID].geometry)[0]
+                patch_geom = UrbanPatch_gdf.geometry.loc[row_num]
+                intersect_geom = patch_geom.intersection(vey_geom)
+                
+                a_area = float(intersect_geom.area)
                 veg_area_list.append(a_area)
 
-                a_perimeter = float(Vegetation_gdf[Vegetation_gdf["osmscID"] == veg_ID].Vegetation_perimeter)
+                a_perimeter = float(intersect_geom.length)
                 veg_perimeter_list.append(a_perimeter)
 
             except:
@@ -421,11 +424,14 @@ def add_interlayer_waterbody_attr(UrbanPatch_gdf, Waterbody_gdf):
         for wat_ID in UrbanPatch_gdf["contains_Waterbody"][row_num]:
 
             try:
-
-                a_area = float(Waterbody_gdf[Waterbody_gdf["osmscID"] == wat_ID].Waterbody_area)
+                wat_geom = list(Waterbody_gdf[Waterbody_gdf["osmscID"]== wat_ID].geometry)[0]
+                patch_geom = UrbanPatch_gdf.geometry.loc[row_num]
+                intersect_geom = patch_geom.intersection(wat_geom)
+                
+                a_area = float(intersect_geom.area)
                 wat_area_list.append(a_area)
 
-                a_perimeter = float(Waterbody_gdf[Waterbody_gdf["osmscID"] == wat_ID].Waterbody_perimeter)
+                a_perimeter = float(intersect_geom.length)
                 wat_perimeter_list.append(a_perimeter)
 
             except:
@@ -444,6 +450,7 @@ def add_interlayer_waterbody_attr(UrbanPatch_gdf, Waterbody_gdf):
     UrbanPatch_gdf["avg_waterbodyPerimeter"] = avg_waterbodyPerimeter_list
     
     return UrbanPatch_gdf
+
 
 ################## Elevation ##################
 

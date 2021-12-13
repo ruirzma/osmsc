@@ -4,6 +4,7 @@ import numpy as np
 import pandas as pd
 import geopandas as gpd
 import osmnx as ox
+import shapely
 from shapely.ops import polygonize
 import time
 
@@ -125,12 +126,9 @@ class building_group(polygon_group):
         if self.place_name:
             poly_gdf = ox.geocoder.geocode_to_gdf(self.place_name)
 
-            temp_gdf_1 = gpd.GeoDataFrame()
+            if type(poly_gdf.geometry.iloc[0]) == shapely.geometry.polygon.Polygon:
 
-            for i in range(len(poly_gdf.geometry.iloc[0])):
-                
-                lon, lat = poly_gdf.geometry.iloc[0][i].exterior.coords.xy
-                time.sleep( 5 )
+                lon, lat = poly_gdf.geometry.iloc[0].exterior.coords.xy
                 
                 # Too many nodes would result in downloading error.
                 if len(lon) < 200:  
@@ -140,24 +138,56 @@ class building_group(polygon_group):
                 
                 # Need to be simplified
                 else: 
-                    lon, lat = poly_gdf.geometry.iloc[0][i].simplify(sim_factor).exterior.coords.xy
+                    lon, lat = poly_gdf.geometry.iloc[0].simplify(sim_factor).exterior.coords.xy
                     self.overpass_query = self.get_overpass_query( lat = lat, lon = lon )
                     osm_json = download(self.overpass_query)
                 
                 try: 
-                    temp_gdf_2 = json_to_gdf(osm_json= osm_json, data_type= "Polygon", 
+                    temp_gdf = json_to_gdf(osm_json= osm_json, data_type= "Polygon", 
                                                 tags = True, building_levels = False, height = True)
-                    temp_gdf_2["Building_height"] = temp_gdf_2["Building_height"].fillna(3) # 假设一层 层高3m
-
+                    temp_gdf ["Building_height"] = temp_gdf ["Building_height"].fillna(3) # 假设一层 层高3m
+                
                 # osm_json is None
                 except: 
-                    temp_gdf_2 = gpd.GeoDataFrame()
-                
-                temp_gdf_1 = pd.concat([temp_gdf_1, temp_gdf_2], ignore_index=True)
+                    temp_gdf = gpd.GeoDataFrame()
+                # set crs
+                temp_gdf = gpd.GeoDataFrame(temp_gdf,crs='epsg:4326')
 
-            temp_gdf = temp_gdf_1
-            # set crs
-            temp_gdf = gpd.GeoDataFrame(temp_gdf,crs='epsg:4326')
+
+            if type(poly_gdf.geometry.iloc[0]) == shapely.geometry.multipolygon.MultiPolygon:
+
+                temp_gdf_1 = gpd.GeoDataFrame()
+                for i in range(len(poly_gdf.geometry.iloc[0])):
+                    
+                    lon, lat = poly_gdf.geometry.iloc[0][i].exterior.coords.xy
+                    time.sleep( 5 )
+                    
+                    # Too many nodes would result in downloading error.
+                    if len(lon) < 200:  
+                        #osm_json = get_osm_json_with_latlon(lat, lon)
+                        self.overpass_query = self.get_overpass_query( lat = lat, lon = lon )
+                        osm_json = download(self.overpass_query)
+                    
+                    # Need to be simplified
+                    else: 
+                        lon, lat = poly_gdf.geometry.iloc[0][i].simplify(sim_factor).exterior.coords.xy
+                        self.overpass_query = self.get_overpass_query( lat = lat, lon = lon )
+                        osm_json = download(self.overpass_query)
+                    
+                    try: 
+                        temp_gdf_2 = json_to_gdf(osm_json= osm_json, data_type= "Polygon", 
+                                                    tags = True, building_levels = False, height = True)
+                        temp_gdf_2["Building_height"] = temp_gdf_2["Building_height"].fillna(3) # 假设一层 层高3m
+
+                    # osm_json is None
+                    except: 
+                        temp_gdf_2 = gpd.GeoDataFrame()
+                    
+                    temp_gdf_1 = pd.concat([temp_gdf_1, temp_gdf_2], ignore_index=True)
+
+                temp_gdf = temp_gdf_1
+                # set crs
+                temp_gdf = gpd.GeoDataFrame(temp_gdf,crs='epsg:4326')
 
         else:
             temp_gdf = json_to_gdf(osm_json= self.query(), data_type= self.data_type, 
@@ -279,36 +309,67 @@ class vegetation_group(polygon_group):
         if self.place_name:
             poly_gdf = ox.geocoder.geocode_to_gdf(self.place_name)
 
-            temp_gdf_1 = gpd.GeoDataFrame()
-            for i in range(len(poly_gdf.geometry.iloc[0])):
+            if type(poly_gdf.geometry.iloc[0]) == shapely.geometry.polygon.Polygon:
 
-                time.sleep( 5 )
-                lon, lat = poly_gdf.geometry.iloc[0][i].exterior.coords.xy
-
+                lon, lat = poly_gdf.geometry.iloc[0].exterior.coords.xy
+                
                 # Too many nodes would result in downloading error.
-                if len(lon) < 50: 
+                if len(lon) < 200:  
                     #osm_json = get_osm_json_with_latlon(lat, lon)
-                    self.overpass_query = self.get_overpass_query(lat, lon)
+                    self.overpass_query = self.get_overpass_query( lat = lat, lon = lon )
                     osm_json = download(self.overpass_query)
-
+                
                 # Need to be simplified
                 else: 
-                    lon, lat = poly_gdf.geometry.iloc[0][i].simplify(sim_factor).exterior.coords.xy
-                    self.overpass_query = self.get_overpass_query(lat, lon)
+                    lon, lat = poly_gdf.geometry.iloc[0].simplify(sim_factor).exterior.coords.xy
+                    self.overpass_query = self.get_overpass_query( lat = lat, lon = lon )
                     osm_json = download(self.overpass_query)
                 
                 try: 
-                    temp_gdf_2 = json_to_gdf(osm_json= osm_json, data_type= "Polygon", 
-                                                tags = True, building_levels = False, height = False)
-
+                    temp_gdf = json_to_gdf(osm_json= osm_json, data_type= "Polygon", 
+                                                tags = True, building_levels = False, height = True)
+                    temp_gdf ["Building_height"] = temp_gdf ["Building_height"].fillna(3) # 假设一层 层高3m
+                
                 # osm_json is None
                 except: 
-                    temp_gdf_2 = gpd.GeoDataFrame()
-                temp_gdf_1 = pd.concat([temp_gdf_1, temp_gdf_2], ignore_index=True)
+                    temp_gdf = gpd.GeoDataFrame()
+                # set crs
+                temp_gdf = gpd.GeoDataFrame(temp_gdf,crs='epsg:4326')
 
-            temp_gdf = temp_gdf_1
-            # set crs
-            temp_gdf = gpd.GeoDataFrame(temp_gdf,crs='epsg:4326')
+            if type(poly_gdf.geometry.iloc[0]) == shapely.geometry.multipolygon.MultiPolygon:
+
+                temp_gdf_1 = gpd.GeoDataFrame()
+                for i in range(len(poly_gdf.geometry.iloc[0])):
+                    
+                    lon, lat = poly_gdf.geometry.iloc[0][i].exterior.coords.xy
+                    time.sleep( 5 )
+                    
+                    # Too many nodes would result in downloading error.
+                    if len(lon) < 200:  
+                        #osm_json = get_osm_json_with_latlon(lat, lon)
+                        self.overpass_query = self.get_overpass_query( lat = lat, lon = lon )
+                        osm_json = download(self.overpass_query)
+                    
+                    # Need to be simplified
+                    else: 
+                        lon, lat = poly_gdf.geometry.iloc[0][i].simplify(sim_factor).exterior.coords.xy
+                        self.overpass_query = self.get_overpass_query( lat = lat, lon = lon )
+                        osm_json = download(self.overpass_query)
+                    
+                    try: 
+                        temp_gdf_2 = json_to_gdf(osm_json= osm_json, data_type= "Polygon", 
+                                                    tags = True, building_levels = False, height = True)
+                        temp_gdf_2["Building_height"] = temp_gdf_2["Building_height"].fillna(3) # 假设一层 层高3m
+
+                    # osm_json is None
+                    except: 
+                        temp_gdf_2 = gpd.GeoDataFrame()
+                    
+                    temp_gdf_1 = pd.concat([temp_gdf_1, temp_gdf_2], ignore_index=True)
+
+                temp_gdf = temp_gdf_1
+                # set crs
+                temp_gdf = gpd.GeoDataFrame(temp_gdf,crs='epsg:4326')
 
         else:
             temp_gdf = json_to_gdf(osm_json= self.query(), data_type= self.data_type, 
@@ -411,35 +472,67 @@ class waterbody_group(polygon_group):
         if self.place_name:
             poly_gdf = ox.geocoder.geocode_to_gdf(self.place_name)
 
-            temp_gdf_1 = gpd.GeoDataFrame()
-            for i in range(len(poly_gdf.geometry.iloc[0])):
-                lon, lat = poly_gdf.geometry.iloc[0][i].exterior.coords.xy
-                time.sleep( 5 )
+            if type(poly_gdf.geometry.iloc[0]) == shapely.geometry.polygon.Polygon:
 
+                lon, lat = poly_gdf.geometry.iloc[0].exterior.coords.xy
+                
                 # Too many nodes would result in downloading error.
-                if len(lon) < 50:  
+                if len(lon) < 200:  
                     #osm_json = get_osm_json_with_latlon(lat, lon)
-                    self.overpass_query = self.get_overpass_query(lat, lon)
+                    self.overpass_query = self.get_overpass_query( lat = lat, lon = lon )
                     osm_json = download(self.overpass_query)
-
+                
                 # Need to be simplified
                 else: 
-                    lon, lat = poly_gdf.geometry.iloc[0][i].simplify(sim_factor).exterior.coords.xy
-                    self.overpass_query = self.get_overpass_query(lat, lon)
+                    lon, lat = poly_gdf.geometry.iloc[0].simplify(sim_factor).exterior.coords.xy
+                    self.overpass_query = self.get_overpass_query( lat = lat, lon = lon )
                     osm_json = download(self.overpass_query)
-            
+                
                 try: 
-                    temp_gdf_2 = json_to_gdf(osm_json= osm_json, data_type= "Polygon", 
-                                                tags = True, building_levels = False, height = False)
-
+                    temp_gdf = json_to_gdf(osm_json= osm_json, data_type= "Polygon", 
+                                                tags = True, building_levels = False, height = True)
+                    temp_gdf ["Building_height"] = temp_gdf ["Building_height"].fillna(3) # 假设一层 层高3m
+                
                 # osm_json is None
                 except: 
-                    temp_gdf_2 = gpd.GeoDataFrame()
-                temp_gdf_1 = pd.concat([temp_gdf_1, temp_gdf_2], ignore_index=True)
+                    temp_gdf = gpd.GeoDataFrame()
+                # set crs
+                temp_gdf = gpd.GeoDataFrame(temp_gdf,crs='epsg:4326')
 
-            temp_gdf = temp_gdf_1
-            # set crs
-            temp_gdf = gpd.GeoDataFrame(temp_gdf,crs='epsg:4326')
+            if type(poly_gdf.geometry.iloc[0]) == shapely.geometry.multipolygon.MultiPolygon:
+
+                temp_gdf_1 = gpd.GeoDataFrame()
+                for i in range(len(poly_gdf.geometry.iloc[0])):
+                    
+                    lon, lat = poly_gdf.geometry.iloc[0][i].exterior.coords.xy
+                    time.sleep( 5 )
+                    
+                    # Too many nodes would result in downloading error.
+                    if len(lon) < 200:  
+                        #osm_json = get_osm_json_with_latlon(lat, lon)
+                        self.overpass_query = self.get_overpass_query( lat = lat, lon = lon )
+                        osm_json = download(self.overpass_query)
+                    
+                    # Need to be simplified
+                    else: 
+                        lon, lat = poly_gdf.geometry.iloc[0][i].simplify(sim_factor).exterior.coords.xy
+                        self.overpass_query = self.get_overpass_query( lat = lat, lon = lon )
+                        osm_json = download(self.overpass_query)
+                    
+                    try: 
+                        temp_gdf_2 = json_to_gdf(osm_json= osm_json, data_type= "Polygon", 
+                                                    tags = True, building_levels = False, height = True)
+                        temp_gdf_2["Building_height"] = temp_gdf_2["Building_height"].fillna(3) # 假设一层 层高3m
+
+                    # osm_json is None
+                    except: 
+                        temp_gdf_2 = gpd.GeoDataFrame()
+                    
+                    temp_gdf_1 = pd.concat([temp_gdf_1, temp_gdf_2], ignore_index=True)
+
+                temp_gdf = temp_gdf_1
+                # set crs
+                temp_gdf = gpd.GeoDataFrame(temp_gdf,crs='epsg:4326')
 
         else:
             temp_gdf = json_to_gdf(osm_json= self.query(), data_type= self.data_type, 
@@ -458,7 +551,7 @@ class transportation_group(polygon_group):
     Construct OSMsc transportation objects
     """
 
-    def get_gdf_prj(self, street_width = 3):
+    def get_gdf_prj(self, street_width = 3, sim_factor = 0.005 ):
         """
         Obtain OSM data and save as GeoDataFrame.
         To define the street width, this function has to use the 
@@ -476,7 +569,7 @@ class transportation_group(polygon_group):
         if self.bbox:
             building_gdf = building_group(bbox= self.bbox).get_gdf()
         if self.place_name:
-            building_gdf = building_group(place_name = self.place_name).get_gdf()
+            building_gdf = building_group(place_name = self.place_name).get_gdf(sim_factor = 0.005)
         # 
         street_graph = street_graph_from_gdf(building_gdf)
         # Street geometry is LineString       
