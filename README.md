@@ -44,8 +44,9 @@ Install from [PyPi](https://pypi.org/project/osmsc/)
 
 
 Note: 
-    1. OSMnx should be installed before OSMsc, installation errors of OSMnx could be resolved in the latest OSMnx [documentation](https://osmnx.readthedocs.io/en/stable/index.html).
-    2. When installing OSMnx manually, you can download the Python extension packages from [here for windows](https://www.lfd.uci.edu/~gohlke/pythonlibs/) and [Homebrew for Mac](https://brew.sh/).
+OSMnx should be installed before OSMsc, installation errors of OSMnx could be resolved in the latest OSMnx [documentation](https://osmnx.readthedocs.io/en/stable/index.html).
+
+When installing OSMnx manually, you can download the Python extension packages from [here](https://www.lfd.uci.edu/~gohlke/pythonlibs/) for Windows and [Homebrew](https://brew.sh/) for Mac.
 
 
 ### Examples
