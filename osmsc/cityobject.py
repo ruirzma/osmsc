@@ -69,7 +69,8 @@ class building_group(polygon_group):
                 ( way["building"][!"building:levels:underground"]""" + str(self.bbox) +  """; 
                 );
                 out geom;
-                """       
+                """ 
+            return self.overpass_query
         
         if self.place_name:
             overpass_poly = ""
@@ -189,7 +190,7 @@ class building_group(polygon_group):
                 # set crs
                 temp_gdf = gpd.GeoDataFrame(temp_gdf,crs='epsg:4326')
 
-        else:
+        elif self.bbox:
             temp_gdf = json_to_gdf(osm_json= self.query(), data_type= self.data_type, 
                                 tags= tags, building_levels = building_levels,
                                 height = height) 
