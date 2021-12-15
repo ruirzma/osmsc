@@ -40,7 +40,7 @@ Install from [Github](https://github.com/ruirzma/osmsc)
 
 `pip install .` or `python setup.py install`
 
-Note: OSMnx should be installed before OSMsc, installation errors of OSMnx could be resolved in the latest [OSMsc documentation](https://osmnx.readthedocs.io/en/stable/index.html).
+Note: OSMnx should be installed before OSMsc, installation errors of OSMnx could be resolved in the latest OSMnx [documentation](https://osmnx.readthedocs.io/en/stable/index.html).
 
 
 ### Examples
