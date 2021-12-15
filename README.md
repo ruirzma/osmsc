@@ -47,7 +47,7 @@ Note:
 
 * OSMnx should be installed before OSMsc, installation errors of OSMnx could be resolved in the latest OSMnx [documentation](https://osmnx.readthedocs.io/en/stable/index.html).
 
-* When installing OSMnx manually, you can download the Python extension packages (Rtree, GDAL, Fiona, etc.) from [here](https://www.lfd.uci.edu/~gohlke/pythonlibs/) for Windows and [Homebrew🍺](https://brew.sh/) for MacOS🍎.
+* When installing OSMnx manually, you can download the Python extension packages (Rtree, GDAL, Fiona, etc.) from [here](https://www.lfd.uci.edu/~gohlke/pythonlibs/) for Windows and [Homebrew🍺](https://brew.sh/) for MacOS.
 
 
 ### Examples
