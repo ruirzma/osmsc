@@ -28,9 +28,6 @@ The main contributions of OSMsc are reflected in the following aspects:
 
 ### Installation
 
-Install from [PyPi](https://pypi.org/project/osmsc/)
-
-`pip install osmsc`
 
 Install from [Github](https://github.com/ruirzma/osmsc)
 
@@ -39,6 +36,12 @@ Install from [Github](https://github.com/ruirzma/osmsc)
 `cd osmsc/`
 
 `pip install .` or `python setup.py install`
+
+
+Install from [PyPi](https://pypi.org/project/osmsc/)
+
+`pip install osmsc`
+
 
 Note: OSMnx should be installed before OSMsc, installation errors of OSMnx could be resolved in the latest OSMnx [documentation](https://osmnx.readthedocs.io/en/stable/index.html).
 
