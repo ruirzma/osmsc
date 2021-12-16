@@ -69,9 +69,9 @@ class building_group(polygon_group):
                 ( way["building"][!"building:levels:underground"]""" + str(self.bbox) +  """; 
                 );
                 out geom;
-                """ 
+                """       
             return self.overpass_query
-        
+            
         if self.place_name:
             overpass_poly = ""
             for i in range(len(lon)):
@@ -190,11 +190,12 @@ class building_group(polygon_group):
                 # set crs
                 temp_gdf = gpd.GeoDataFrame(temp_gdf,crs='epsg:4326')
 
-        elif self.bbox:
+        else:
             temp_gdf = json_to_gdf(osm_json= self.query(), data_type= self.data_type, 
                                 tags= tags, building_levels = building_levels,
                                 height = height) 
         
+        temp_gdf["geometry"] = temp_gdf["geometry"].buffer(0)
         # projection
         temp_gdf_prj = ox.project_gdf(temp_gdf)
 
@@ -211,6 +212,9 @@ class building_group(polygon_group):
             # assume level height is 3m
             temp_gdf["Building_height"] = temp_gdf["building_levels"] * 3
 
+        if height:
+            # assume level height is 3m
+            temp_gdf["Building_height"] = temp_gdf["Building_height"].fillna(3)
 
         return temp_gdf
 
@@ -267,7 +271,8 @@ class vegetation_group(polygon_group):
                 
                 );
                 out geom;
-                """      
+                """ 
+            return self.overpass_query     
         
         if self.place_name:
             overpass_poly = ""
@@ -376,6 +381,7 @@ class vegetation_group(polygon_group):
             temp_gdf = json_to_gdf(osm_json= self.query(), data_type= self.data_type, 
                                 tags= tags) 
 
+        temp_gdf["geometry"] = temp_gdf["geometry"].buffer(0)
         temp_gdf_prj = ox.project_gdf(temp_gdf)
 
         temp_gdf["osmscID"] = ["Vegetation_"+ str(i) for i in temp_gdf["osmid"]]
@@ -431,7 +437,8 @@ class waterbody_group(polygon_group):
                 );
                 out geom;
                 """   
-        
+            return self.overpass_query 
+
         if self.place_name:
             overpass_poly = ""
             for i in range(len(lon)):
@@ -538,7 +545,8 @@ class waterbody_group(polygon_group):
         else:
             temp_gdf = json_to_gdf(osm_json= self.query(), data_type= self.data_type, 
                             tags= tags) 
-
+                            
+        temp_gdf["geometry"] = temp_gdf["geometry"].buffer(0)
         temp_gdf_prj = ox.project_gdf(temp_gdf)
 
         temp_gdf["osmscID"] = ["WaterBody_"+ str(i) for i in temp_gdf["osmid"]]
@@ -623,6 +631,7 @@ class urban_patch_group(polygon_group):
         """
         # Download the street dataframe
         street_gdf_prj = transportation_group(bbox= self.bbox, place_name = self.place_name, trans_type= self.trans_type).get_gdf_prj()
+        street_gdf_prj["geometry"] = street_gdf_prj["geometry"].buffer(0)
         # Merged streets are the basis for generating blocks
         street_dis_geom = street_gdf_prj.dissolve().iloc[0].geometry       
         
