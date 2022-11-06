@@ -98,15 +98,15 @@ def json_to_gdf(osm_json, data_type, tags = True, building_levels = False, heigh
                         if "building:levels" in element["tags"].keys():
                             building_levels_list.append(int(float(element["tags"]["building:levels"])))
                         else:
-                            building_levels_list.append(None)
+                            building_levels_list.append(1)
                     if height:
                         if "height" in element["tags"].keys():
                             building_height_list.append(float(element["tags"]["height"]))
                         else:
-                            building_height_list.append(None)                            
+                            building_height_list.append(3)                            
                 except:
-                    building_levels_list.append(None)
-                    building_height_list.append(None)
+                    building_levels_list.append(1)
+                    building_height_list.append(3)
 
 
         if data_type == "Point":
@@ -167,7 +167,8 @@ def json_to_gdf(osm_json, data_type, tags = True, building_levels = False, heigh
         temp_gdf["osmid"] = osm_id
         temp_gdf['geometry'] = coords_list
         # set crs
-        temp_gdf = gpd.GeoDataFrame(temp_gdf,crs='epsg:4326')
+        temp_gdf = temp_gdf.set_crs(crs='epsg:4326')
+        #gpd.GeoDataFrame(temp_gdf,crs='epsg:4326')
 
         # Add "tags" column
         if tags:

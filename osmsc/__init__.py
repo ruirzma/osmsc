@@ -2,11 +2,12 @@
 
 from .__version__ import __version__
 from .cityobject import building_group, vegetation_group, waterbody_group, transportation_group, urban_patch_group
-from .grid import Grid
+# from .grid import Grid
 # from .patch import Patch
 
-import osmsc.utils, osmsc.feature, osmsc.fusion
-import osmsc.plot,  osmsc.cityjson
+from .feature import add_spatial_semantics_attr
+# osmsc.utils, osmsc.feature, osmsc.fusion
+# import osmsc.plot,  osmsc.cityjson
 
 # TODO from .__api__ import *   
 
