@@ -574,10 +574,3 @@ def add_gdf_elevation_features(gdf, elevation_dataset = None, data_type = None, 
     
     return gdf
 
-
-
-
-
-
-
-

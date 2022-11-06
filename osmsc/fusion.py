@@ -1,6 +1,5 @@
 """ Data fusion for OSMsc objects"""
 
-
 import numpy as np
 import pandas as pd
 import geopandas as gpd

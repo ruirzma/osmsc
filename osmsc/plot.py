@@ -7,7 +7,6 @@ import matplotlib.pyplot as plt
 
 from .utils import bbox_from_gdf
 
-
 def viz_buildings(buildings_gdf, zoom=11, max_zoom=16, pitch=45, bearing=0, 
         html_name = "3D_buildings"):
     """

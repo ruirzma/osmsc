@@ -2,7 +2,6 @@
 
 from .utils import json_to_gdf
 
-
 class polygon_group(object):
     """
     polygon_group class for urban polygon objects

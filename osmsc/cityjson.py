@@ -5,7 +5,6 @@ from cjio import cityjson
 from cjio.models import CityObject, Geometry
 from .utils import fill_nan_list_position
 
-
 class city_json(object):
     """
     Create CityJSON-schema objects, including building, vegetation, waterbody

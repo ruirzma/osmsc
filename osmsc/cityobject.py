@@ -12,7 +12,6 @@ from .geogroup import point_group, polygon_group, line_string_group
 
 #TODO logging 
 
-
 #################################################################################
 
 class building_group(polygon_group): 

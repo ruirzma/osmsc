@@ -12,7 +12,6 @@ import random
 from shapely.geometry import Point, LineString, Polygon, MultiPolygon
 from shapely.ops import polygonize
 
-
 def download(overpass_query):
     """
     Download OSM via Overpass API
