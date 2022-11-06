@@ -4,7 +4,6 @@ import geopandas as gpd
 import pydeck as pdk
 from contextily import add_basemap
 import matplotlib.pyplot as plt
-
 from .utils import bbox_from_gdf
 
 def viz_buildings(buildings_gdf, zoom=11, max_zoom=16, pitch=45, bearing=0, 
