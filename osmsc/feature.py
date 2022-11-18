@@ -21,7 +21,7 @@ def add_spatial_semantics_attr(left_gdf,right_gdf,semColName, how="left", op="in
         # As for both gdf, more detail cna be found in 
         # https://automating-gis-processes.github.io/CSC18/lessons/L4/spatial-join.html
 
-    semColName : string e.g. contains_Building or within Patch
+    semColName : string e.g. containsBuilding or within Patch
         New column name
 
     Returns
@@ -263,15 +263,15 @@ def get_brngList_for_polygon(polygon):
 
 
 ################## inter layer attrs ##################
-def add_interlayer_building_attr(UrbanPatch_gdf, Building_gdf):
+def add_interlayer_building_attr(UrbanTile_gdf, Building_gdf):
     """
-    Add interlayer building attrs to gdf, mostly to UrbanPatch_gdf.
+    Add interlayer building attrs to gdf, mostly to UrbanTile_gdf.
     The prerequisite is the spatial semantic relationship between two layer is known, namely,
     add_spatial_semantics_attr() has been run.
 
     Parameters
     ----------
-    UrbanPatch_gdf : GeoDataFrame
+    UrbanTile_gdf : GeoDataFrame
         Add interlayer building attrs into this GeoDataFrame.
     Building_gdf : GeoDataFrame
 
@@ -286,15 +286,15 @@ def add_interlayer_building_attr(UrbanPatch_gdf, Building_gdf):
     avg_buildingArea_list = []
     avg_buildingPerimeter_list = []
 
-    for row_num in range(len(UrbanPatch_gdf)):
+    for row_num in range(len(UrbanTile_gdf)):
 
-        # For one UrbanPatch object
+        # For one UrbanTile object
         ########## Avergae height/area/perimeter of buildings ###########
         bldg_height_list = []
         bldg_area_list = []
         bldg_perimeter_list = []
 
-        for bldg_ID in UrbanPatch_gdf["contains_Building"][row_num]:
+        for bldg_ID in UrbanTile_gdf["containsBuilding"][row_num]:
 
             try:
                 # Building_height 
@@ -320,27 +320,27 @@ def add_interlayer_building_attr(UrbanPatch_gdf, Building_gdf):
         avg_buildingArea_list.append(np.mean(bldg_area_list)) 
         avg_buildingPerimeter_list.append(np.mean(bldg_perimeter_list))
 
-        UrbanPatch_area = float(UrbanPatch_gdf["UrbanPatch_area"].loc[row_num])
-        buildingDensity_list.append(np.sum(bldg_area_list)/UrbanPatch_area)
+        UrbanTile_area = float(UrbanTile_gdf["UrbanTile_area"].loc[row_num])
+        buildingDensity_list.append(np.sum(bldg_area_list)/UrbanTile_area)
 
     # Add attrs columns
-    UrbanPatch_gdf["buildingDensity"] = buildingDensity_list
-    UrbanPatch_gdf["avg_buildingHeight"] = avg_buildingHeight_list
-    UrbanPatch_gdf["avg_buildingArea"] = avg_buildingArea_list
-    UrbanPatch_gdf["avg_buildingPerimeter"] = avg_buildingPerimeter_list
+    UrbanTile_gdf["buildingDensity"] = buildingDensity_list
+    UrbanTile_gdf["avg_buildingHeight"] = avg_buildingHeight_list
+    UrbanTile_gdf["avg_buildingArea"] = avg_buildingArea_list
+    UrbanTile_gdf["avg_buildingPerimeter"] = avg_buildingPerimeter_list
     
-    return UrbanPatch_gdf
+    return UrbanTile_gdf
 
 
-def add_interlayer_vegetation_attr(UrbanPatch_gdf, Vegetation_gdf):
+def add_interlayer_vegetation_attr(UrbanTile_gdf, Vegetation_gdf):
     """
-    Add interlayer vegetation attrs to gdf, mostly to UrbanPatch_gdf.
+    Add interlayer vegetation attrs to gdf, mostly to UrbanTile_gdf.
     The prerequisite is the spatial semantic relationship between two layer is known, namely,
     add_spatial_semantics_attr() has been run.
 
     Parameters
     ----------
-    UrbanPatch_gdf : GeoDataFrame
+    UrbanTile_gdf : GeoDataFrame
         Add interlayer vegetation attrs into this GeoDataFrame.
     Building_gdf : GeoDataFrame
 
@@ -353,15 +353,15 @@ def add_interlayer_vegetation_attr(UrbanPatch_gdf, Vegetation_gdf):
     avg_vegetationArea_list = []
     avg_vegetationPerimeter_list = []
 
-    for row_num in range(len(UrbanPatch_gdf)):
+    for row_num in range(len(UrbanTile_gdf)):
 
-        # For one UrbanPatch object
+        # For one UrbanTile object
         ########## Avergae area/perimeter of vegetation objects ###########
 
         veg_area_list = []
         veg_perimeter_list = []
 
-        for veg_ID in UrbanPatch_gdf["contains_Vegetation"][row_num]:
+        for veg_ID in UrbanTile_gdf["containsVegetation"][row_num]:
 
             try:
 
@@ -378,26 +378,26 @@ def add_interlayer_vegetation_attr(UrbanPatch_gdf, Vegetation_gdf):
         avg_vegetationArea_list.append(np.mean(veg_area_list)) 
         avg_vegetationPerimeter_list.append(np.mean(veg_perimeter_list))
 
-        UrbanPatch_area = float(UrbanPatch_gdf["UrbanPatch_area"].loc[row_num])
-        vegetationDensity_list.append(np.sum(veg_area_list)/UrbanPatch_area)
+        UrbanTile_area = float(UrbanTile_gdf["UrbanTile_area"].loc[row_num])
+        vegetationDensity_list.append(np.sum(veg_area_list)/UrbanTile_area)
 
     # Add attrs columns
-    UrbanPatch_gdf["vegetationDensity"] = vegetationDensity_list
-    UrbanPatch_gdf["avg_vegetationArea"] = avg_vegetationArea_list
-    UrbanPatch_gdf["avg_vegetationPerimeter"] = avg_vegetationPerimeter_list
+    UrbanTile_gdf["vegetationDensity"] = vegetationDensity_list
+    UrbanTile_gdf["avg_vegetationArea"] = avg_vegetationArea_list
+    UrbanTile_gdf["avg_vegetationPerimeter"] = avg_vegetationPerimeter_list
     
-    return UrbanPatch_gdf
+    return UrbanTile_gdf
 
 
-def add_interlayer_waterbody_attr(UrbanPatch_gdf, Waterbody_gdf):
+def add_interlayer_waterbody_attr(UrbanTile_gdf, Waterbody_gdf):
     """
-    Add interlayer waterbody attrs to gdf, mostly to UrbanPatch_gdf.
+    Add interlayer waterbody attrs to gdf, mostly to UrbanTile_gdf.
     The prerequisite is the spatial semantic relationship between two layer is known, namely,
     add_spatial_semantics_attr() has been run.
 
     Parameters
     ----------
-    UrbanPatch_gdf : GeoDataFrame
+    UrbanTile_gdf : GeoDataFrame
         Add interlayer waterbody attrs into this GeoDataFrame.
     Building_gdf : GeoDataFrame
 
@@ -410,15 +410,15 @@ def add_interlayer_waterbody_attr(UrbanPatch_gdf, Waterbody_gdf):
     avg_waterbodyArea_list = []
     avg_waterbodyPerimeter_list = []
 
-    for row_num in range(len(UrbanPatch_gdf)):
+    for row_num in range(len(UrbanTile_gdf)):
 
-        # For one UrbanPatch object
+        # For one UrbanTile object
         ########## Avergae area/perimeter of waterbody objects ###########
 
         wat_area_list = []
         wat_perimeter_list = []
 
-        for wat_ID in UrbanPatch_gdf["contains_Waterbody"][row_num]:
+        for wat_ID in UrbanTile_gdf["containsWaterbody"][row_num]:
 
             try:
 
@@ -435,15 +435,15 @@ def add_interlayer_waterbody_attr(UrbanPatch_gdf, Waterbody_gdf):
         avg_waterbodyArea_list.append(np.mean(wat_area_list)) 
         avg_waterbodyPerimeter_list.append(np.mean(wat_perimeter_list))
 
-        UrbanPatch_area = float(UrbanPatch_gdf["UrbanPatch_area"].loc[row_num])
-        waterbodyDensity_list.append(np.sum(wat_area_list)/UrbanPatch_area)
+        UrbanTile_area = float(UrbanTile_gdf["UrbanTile_area"].loc[row_num])
+        waterbodyDensity_list.append(np.sum(wat_area_list)/UrbanTile_area)
     
     # Add attrs columns
-    UrbanPatch_gdf["waterbodyDensity"] = waterbodyDensity_list
-    UrbanPatch_gdf["avg_waterbodyArea"] = avg_waterbodyArea_list
-    UrbanPatch_gdf["avg_waterbodyPerimeter"] = avg_waterbodyPerimeter_list
+    UrbanTile_gdf["waterbodyDensity"] = waterbodyDensity_list
+    UrbanTile_gdf["avg_waterbodyArea"] = avg_waterbodyArea_list
+    UrbanTile_gdf["avg_waterbodyPerimeter"] = avg_waterbodyPerimeter_list
     
-    return UrbanPatch_gdf
+    return UrbanTile_gdf
 
 ################## Elevation ##################
 

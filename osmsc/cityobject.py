@@ -516,7 +516,7 @@ class transportation_group(polygon_group):
 
         return street_gdf_prj
 
-class urban_patch_group(polygon_group):
+class urban_tile_group(polygon_group):
     """
     Construct OSMsc urban patch objects
     """
@@ -537,24 +537,24 @@ class urban_patch_group(polygon_group):
         street_gdf_prj["geometry"] = street_gdf_prj["geometry"].buffer(0.001)
         street_dis_geom = street_gdf_prj.dissolve().iloc[0].geometry       
         
-        # Create urban_patch_gdf
-        urban_patch_gdf_prj = gpd.GeoDataFrame()
+        # Create urban_tile_gdf
+        urban_tile_gdf_prj = gpd.GeoDataFrame()
         # All streets are merged into a polygon
-        urban_patch_gdf_prj["geometry"] = list(polygonize(street_dis_geom.boundary))
+        urban_tile_gdf_prj["geometry"] = list(polygonize(street_dis_geom.boundary))
         # delete the whole street polygon
-        urban_patch_gdf_prj = urban_patch_gdf_prj.drop(index=0)
+        urban_tile_gdf_prj = urban_tile_gdf_prj.drop(index=0)
         # re-index
-        urban_patch_gdf_prj.index = urban_patch_gdf_prj.index - 1
+        urban_tile_gdf_prj.index = urban_tile_gdf_prj.index - 1
         # set crs
-        urban_patch_gdf_prj.crs = street_gdf_prj.crs
+        urban_tile_gdf_prj.crs = street_gdf_prj.crs
 
         # Add osmscID column
-        urban_patch_gdf_prj["osmscID"] = ["UrbanPatch_"+str(i) for i in range(len(urban_patch_gdf_prj))]
+        urban_tile_gdf_prj["osmscID"] = ["UrbanTile_"+str(i) for i in range(len(urban_tile_gdf_prj))]
         # Add other attr columns       
-        urban_patch_gdf_prj["UrbanPatch_area"] = urban_patch_gdf_prj["geometry"].area
-        urban_patch_gdf_prj["UrbanPatch_perimeter"] = urban_patch_gdf_prj["geometry"].length
+        urban_tile_gdf_prj["UrbanTile_area"] = urban_tile_gdf_prj["geometry"].area
+        urban_tile_gdf_prj["UrbanTile_perimeter"] = urban_tile_gdf_prj["geometry"].length
 
-        return urban_patch_gdf_prj
+        return urban_tile_gdf_prj
 
 
 ####### TODO More city objects in OSMsc, namely, networks and points ########

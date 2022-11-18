@@ -15,13 +15,13 @@ class city_json(object):
     """
 
     def __init__(self, building_gdf = None , vegetation_gdf = None, 
-    waterbody_gdf = None, transportation_gdf = None, urban_patch_gdf = None):
+    waterbody_gdf = None, transportation_gdf = None, urban_tile_gdf = None):
 
         self.building_gdf = building_gdf
         self.vegetation_gdf = vegetation_gdf
         self.waterbody_gdf = waterbody_gdf
         self.transportation_gdf = transportation_gdf
-        self.urban_patch_gdf = urban_patch_gdf
+        self.urban_tile_gdf = urban_tile_gdf
 
         # create an empty CityModel
         self.cm = cityjson.CityJSON()
@@ -285,40 +285,40 @@ class city_json(object):
                 pass
         return self.cm
 
-    def create_urban_patch_object(self):
+    def create_urban_tile_object(self):
         """
         Create CityJSON objects for all urban patch objects
-        Main class variable: self.urban_patch_gdf, self.cm
+        Main class variable: self.urban_tile_gdf, self.cm
 
         Returns
         -------
         cm : cityjson.CityJSON
         """
         # Create a CityJSON object for each urban patch object
-        for u_index in range(len(self.urban_patch_gdf)):
+        for u_index in range(len(self.urban_tile_gdf)):
             # Create empty urban patch CityJSON object 
-            urbanPatchObject = CityObject(id=str(self.urban_patch_gdf.iloc[u_index].osmscID))
+            UrbanTileObject = CityObject(id=str(self.urban_tile_gdf.iloc[u_index].osmscID))
 
-            temp_gdf = self.urban_patch_gdf.set_index(self.urban_patch_gdf["osmscID"])
+            temp_gdf = self.urban_tile_gdf.set_index(self.urban_tile_gdf["osmscID"])
             attr_dict= json.loads(temp_gdf.to_json())
 
             u_attrs = attr_dict['features'][u_index]['properties']
-            urbanPatchObject.attributes = u_attrs
+            UrbanTileObject.attributes = u_attrs
 
             #######################################Geometry############################
             u_geom = Geometry(type='CompositeSurface', lod=0)
 
-            urbanPatch_poly = self.urban_patch_gdf.iloc[u_index].geometry
+            UrbanTile_poly = self.urban_tile_gdf.iloc[u_index].geometry
             
             try:
                 # Don't consider the content of MultiPolygon at present, 
                 # and do it separately later
             
                 # Checking if vertices of polygon are in counter-clockwise 是否是逆时针
-                urbanPatch_poly_ccw = urbanPatch_poly.exterior.is_ccw
+                UrbanTile_poly_ccw = UrbanTile_poly.exterior.is_ccw
 
                 # Extract the point values that define the perimeter of the polygon
-                x, y = urbanPatch_poly.exterior.coords.xy
+                x, y = UrbanTile_poly.exterior.coords.xy
 
                 x_list = list(x)
                 y_list = list(y)
@@ -327,7 +327,7 @@ class city_json(object):
 
                 for i in range(len(x_list)-1):
                     # The coordinates of the polygon are counterclockwise
-                    if  urbanPatch_poly_ccw:
+                    if  UrbanTile_poly_ccw:
                         top_sur.append((x_list[i],y_list[i],0))
                     # The coordinates of polygon are clockwise                    
                     else:
@@ -338,10 +338,10 @@ class city_json(object):
                 u_geom.boundaries.append(u_bdry)
 
                 # Add propertries to CityJSON objects
-                urbanPatchObject.geometry.append(u_geom)
-                urbanPatchObject.type = "GenericCityObject"
+                UrbanTileObject.geometry.append(u_geom)
+                UrbanTileObject.type = "GenericCityObject"
 
-                self.cm.cityobjects[urbanPatchObject.id] = urbanPatchObject
+                self.cm.cityobjects[UrbanTileObject.id] = UrbanTileObject
                 
             except:
                 pass
@@ -357,7 +357,7 @@ class city_json(object):
         Parameters
         ----------
         gdf : geopandas.GeoDataFrame
-            mostly building_gdf and urban_patch_gdf
+            mostly building_gdf and urban_tile_gdf
 
         Returns
         -------
@@ -375,7 +375,7 @@ class city_json(object):
         """
         Output CityJSON object into a JSON file.
         Main class variable: self.building_gdf, self.vegetation_gdf, self.waterbody_gdf
-                            self.transportation_gdf, self.urban_patch_gdf, self.cm
+                            self.transportation_gdf, self.urban_tile_gdf, self.cm
 
         Parameters
         ----------
@@ -393,7 +393,7 @@ class city_json(object):
 
         ################# Building #################
         if self.building_gdf is not None:
-            self.building_gdf = fill_nan_list_position(self.building_gdf,"within_UrbanPatch")
+            self.building_gdf = fill_nan_list_position(self.building_gdf,"within_UrbanTile")
             self.building_gdf = fill_nan_list_position(self.building_gdf,"Building_height")
 
             self.building_gdf = self.drop_extra_geom(self.building_gdf)
@@ -401,12 +401,12 @@ class city_json(object):
 
         ################# Vegetation #################
         if self.vegetation_gdf is not None:
-            self.vegetation_gdf = fill_nan_list_position(self.vegetation_gdf,"within_UrbanPatch")
+            self.vegetation_gdf = fill_nan_list_position(self.vegetation_gdf,"within_UrbanTile")
             self.cm = self.create_vegetation_object()       
 
         ################# Waterbody #################
         if self.vegetation_gdf is not None:
-            self.waterbody_gdf = fill_nan_list_position(self.waterbody_gdf,"within_UrbanPatch")
+            self.waterbody_gdf = fill_nan_list_position(self.waterbody_gdf,"within_UrbanTile")
             self.cm = self.create_waterbody_object()
 
 
@@ -414,15 +414,15 @@ class city_json(object):
         if self.transportation_gdf is not None:
             self.cm = self.create_transportation_object()
 
-        ################# UrbanPatch #################
-        if self.urban_patch_gdf is not None:
-            self.urban_patch_gdf = fill_nan_list_position(self.urban_patch_gdf, "contains_Vegetation")
-            self.urban_patch_gdf = fill_nan_list_position(self.urban_patch_gdf, "contains_Building")
-            self.urban_patch_gdf = fill_nan_list_position(self.urban_patch_gdf, "contains_Waterbody")
+        ################# UrbanTile #################
+        if self.urban_tile_gdf is not None:
+            self.urban_tile_gdf = fill_nan_list_position(self.urban_tile_gdf, "containsVegetation")
+            self.urban_tile_gdf = fill_nan_list_position(self.urban_tile_gdf, "containsBuilding")
+            self.urban_tile_gdf = fill_nan_list_position(self.urban_tile_gdf, "containsWaterbody")
 
-            self.urban_patch_gdf = self.drop_extra_geom(self.urban_patch_gdf)
+            self.urban_tile_gdf = self.drop_extra_geom(self.urban_tile_gdf)
 
-            self.cm = self.create_urban_patch_object()
+            self.cm = self.create_urban_tile_object()
 
 
         # reference_geometry

@@ -116,12 +116,12 @@ def add_building_tags(OSMscBuilding_gdf, tagColName ,externalBuilding_gdf, extCo
 
 def add_elevation(cityobject_gdf, elevation_dataset = "aster30m", step = 5):
     """
-    Mostly, add elevation to UrbanPatch and Transportation GeoDataFrame
+    Mostly, add elevation to UrbanTile and Transportation GeoDataFrame
 
     Parameters
     ----------
     cityobject_gdf : GeoDataFrame
-        UrbanPatch or Transportation GeoDataFrame
+        UrbanTile or Transportation GeoDataFrame
     elevation_dataset : string
         Online elevation can be chose from https://www.opentopodata.org
     step : int
@@ -168,7 +168,7 @@ def get_intersected_grid_gdf(cityobject_gdf, elevation_dataset = "aster30m", ste
     Parameters
     ----------
     cityobject_gdf : GeoDataFrame
-        UrbanPatch or Transportation GeoDataFrame
+        UrbanTile or Transportation GeoDataFrame
     elevation_dataset : string
         Online elevation can be chose from https://www.opentopodata.org
     step : int
