@@ -24,7 +24,7 @@ Photo by <a href="https://unsplash.com/@akeenster?utm_source=unsplash&utm_medium
 </p>
 
 
-The main contributions of OSMsc are reflected in the following aspects:
+The main contributions of OSMsc:
 * Construct semantic city objects based on the public dataset (OpenStreetMap), and apply geometric operations to build more complete city objects;
 * Fuse 3D and tag information from multiple data sources through the spatial analysis between OSMsc layers and other non-OSM data layers;
 * Propose the semantic connector(UrbanTile), and supplement the spatial semantics;
