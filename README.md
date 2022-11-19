@@ -1,6 +1,10 @@
 OSMsc 
 ====
 ![](https://img.shields.io/badge/python-v3.7-blue)
+![](https://img.shields.io/pypi/v/osmsc?style=plastic)
+https://img.shields.io/pypi/v/osmsc?style=plastic
+
+
 *updated 15 Nov 2022*
 
 <font color=green size=4> This repo creates an easy-to-use Python package, named OSMsc, to improve the availability, consistency and generalizability of urban semantic data.</font>
