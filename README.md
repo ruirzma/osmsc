@@ -3,8 +3,10 @@ OSMsc
 ![python](https://img.shields.io/badge/python-v3.7-blue?style=plastic)
 ![PyPI](https://img.shields.io/pypi/v/osmsc?style=plastic)
 ![PyPI - Wheel](https://img.shields.io/pypi/wheel/osmsc?style=plastic)
-![PyPI - License](https://img.shields.io/pypi/l/osmsc?style=plastic)
 ![PyPI - Implementation](https://img.shields.io/pypi/implementation/osmsc?style=plastic)
+![PyPI - License](https://img.shields.io/pypi/l/osmsc?style=plastic)
+![GitHub repo size](https://img.shields.io/github/repo-size/ruirzma/osmsc?style=plastic)
+![GitHub repo file count](https://img.shields.io/github/directory-file-count/ruirzma/osmsc?style=plastic)
 
 
 *updated 15 Nov 2022*
