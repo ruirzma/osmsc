@@ -1,4 +1,3 @@
-
 OSMsc 
 ====
 *updated 15 Nov 2022*
@@ -29,7 +28,6 @@ The main contributions of OSMsc are reflected in the following aspects:
 
 
 ### Installation
-=====
 
 
 Install from [Github](https://github.com/ruirzma/osmsc)
@@ -54,7 +52,8 @@ Note:
 
 
 ### Examples
-=====
+
+
 [OSMsc demonstration notebooks](https://github.com/ruirzma/osmsc/tree/main/examples)
 
 ### Reference
