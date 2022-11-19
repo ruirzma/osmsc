@@ -1,9 +1,11 @@
 
 OSMsc 
 =====
-*updated 15 Oct 2022*
+*updated 15 Nov 2022*
 
-<font color=green size=4> This repo created an easy-to-use Python package, named OSMsc, to improve the availability, consistency and generalizability of urban semantic data.</font>
+<font color=green size=4> This repo creates an easy-to-use Python package, named OSMsc, to improve the availability, consistency and generalizability of urban semantic data.</font>
+
+<font color=black size=5> OSMsc v0.2.0 is coming! </font>
 
 
 
@@ -15,10 +17,10 @@ Photo by <a href="https://unsplash.com/@akeenster?utm_source=unsplash&utm_medium
 
 
 The main contributions of OSMsc are reflected in the following aspects:
-* Construct semantic city objects based on the public dataset (OpenStreetMap), apply geometric operations to build the incomplete objects, and store them in their respective data layers.
-* Fuse 3D and tag information from multiple data sources through the spatial analysis between OSMsc layers and other non-OSM data layers.
-* Supplement the spatial semantics and geometric properties to city objects through object layer analysis.
-* Utilize each data layer as a unit to output the final CityJSON semantic objects
+* Construct semantic city objects based on the public dataset (OpenStreetMap), and apply geometric operations to build more complete city objects;
+* Fuse 3D and tag information from multiple data sources through the spatial analysis between OSMsc layers and other non-OSM data layers;
+* Propose the semantic connector(UrbanTile), and supplement the spatial semantics;
+* Output the CityJSON-formatted semantic city models.
 
 
 
