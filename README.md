@@ -1,6 +1,6 @@
 OSMsc 
 ====
-![python](https://img.shields.io/badge/python-v3.7-blue?style=plastic)
+![python](https://img.shields.io/badge/python-3.7%20%7C%203.8%20%7C%203.9-blue?style=plastic)
 ![PyPI](https://img.shields.io/pypi/v/osmsc?style=plastic)
 ![PyPI - Wheel](https://img.shields.io/pypi/wheel/osmsc?style=plastic)
 ![PyPI - Implementation](https://img.shields.io/pypi/implementation/osmsc?style=plastic)
