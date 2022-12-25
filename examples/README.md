@@ -5,4 +5,4 @@ OSMsc examples
 
 ![](Paris_cityjson.png)
 
-OSMsc usage examples are available at: https://github.com/ruirzma/osmsc-examples
+OSMsc usage examples are available at: https://github.com/scm2023/osmsc-examples
