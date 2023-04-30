@@ -13,3 +13,7 @@ osmnx==1.0.0
 cjio==0.6.6
 pydeck==0.6.1
 contextily==1.1.0
+
+
+add urbanTile_gdf_prj["geometry"] = urbanTile_gdf_prj["geometry"].simplify(0.05, preserve_topology=False)
+
