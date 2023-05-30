@@ -16,4 +16,5 @@ contextily==1.1.0
 
 
 add urbanTile_gdf_prj["geometry"] = urbanTile_gdf_prj["geometry"].simplify(0.05, preserve_topology=False)
+https://figshare.com/s/8fca2979232b85cfb2d5
 
