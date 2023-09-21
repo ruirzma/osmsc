@@ -9,7 +9,7 @@ OSMsc
 ![PyPI - License](https://img.shields.io/pypi/l/osmsc?style=plastic)
 
 
-*updated 15 Nov 2022*
+*updated 21 Sep 2023*
 
 <font color=green size=4> This repo develops an easy-to-use Python package, named OSMsc, to improve the availability, consistency and generalizability of urban semantic data.</font>
 
