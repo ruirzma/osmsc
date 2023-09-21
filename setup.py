@@ -13,7 +13,7 @@ with open("requirements.txt") as f:
     requirements = [line.strip() for line in f.readlines()]
 
 setup(name='osmsc',
-    version='0.1.1',
+    version='0.1.20',
     author='Rui Ma',
     author_email='rui.rz.ma@gmail.com',
     install_requires= requirements,
