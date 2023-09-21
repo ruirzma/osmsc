@@ -12,6 +12,7 @@ import random
 from shapely.geometry import Point, LineString, Polygon, MultiPolygon
 from shapely.ops import polygonize
 
+
 def download(overpass_query):
     """
     Download OSM via Overpass API
@@ -98,14 +99,26 @@ def json_to_gdf(osm_json, data_type, tags = True, building_levels = False, heigh
                             building_levels_list.append(int(float(element["tags"]["building:levels"])))
                         else:
                             building_levels_list.append(1)
+                except:
+                        building_levels_list.append(1)
+                try:# unknown tags
                     if height:
                         if "height" in element["tags"].keys():
-                            building_height_list.append(float(element["tags"]["height"]))
+                            # aviod "7 m"  "7.5 m"
+                            height_string = element["tags"]["height"]
+                            building_height_list.append([float(i) for i in height_string.split() if i.isdigit() or i.replace(".", '', 1).isdigit()][0])
                         else:
                             building_height_list.append(3)                            
                 except:
-                    building_levels_list.append(1)
                     building_height_list.append(3)
+            
+                # # if building level>1, height  = building level * 3
+                if building_levels:
+                    if building_levels_list[-1] !=1 and building_height_list[-1] == 3:
+                        building_height_list[-1] = building_levels_list[-1] *3
+                    if building_height_list[-1] == 0:
+                        building_height_list[-1] = building_levels_list[-1] *3
+
 
 
         if data_type == "Point":
@@ -527,7 +540,7 @@ def graph_from_gdfs(gdf_nodes, gdf_edges, graph_attrs=None):
 
 ##################### osmuf utils ################################
 # TODO rewrite osmuf package parts for osmsc
-def street_graph_from_gdf(gdf, network_type='all'):
+def street_graph_from_gdf(gdf, network_type='drive'):
     """
     Updated from osmuf https://github.com/AtelierLibre/osmuf
     Download streets within a convex hull around a GeoDataFrame.
@@ -711,7 +724,7 @@ def gen_regularity(gdf):
     -------
     GeoDataFrame
     """
-    #gdf_regularity = gdf[['morpho_patch_id', 'geometry']].copy()
+    #gdf_regularity = gdf[['morpho_Tile_id', 'geometry']].copy()
     gdf_regularity = gdf[['geometry']].copy()
 
     # write the area of each polygon into a column
@@ -759,7 +772,7 @@ def extract_poly_coords(geom):
 
     return exterior_coords + interior_coords
 
-def create_regularity_gdf(morpho_patchs_gdf):
+def create_regularity_gdf(morpho_Tiles_gdf):
     """Updated from osmuf https://github.com/AtelierLibre/osmuf"""
 
     # poly_area_m2 --> block area 
@@ -768,7 +781,7 @@ def create_regularity_gdf(morpho_patchs_gdf):
     # calculate "regularity" as "the ratio between the area of the polygon and
     # the area of the circumscribed circle C" Barthelemy M. and Louf R., (2014)
     # regularity  --> poly_area_m2 / SEC_area_m2
-    regularity_gdf = gen_regularity(morpho_patchs_gdf)
+    regularity_gdf = gen_regularity(morpho_Tiles_gdf)
 
     # Add the radius of SEC_R_m circumscribed circle
     regularity_gdf['SEC_area_m2'] = regularity_gdf['SEC_area_m2'].astype('float')

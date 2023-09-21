@@ -5,29 +5,30 @@ from cjio import cityjson
 from cjio.models import CityObject, Geometry
 from .utils import fill_nan_list_position
 
+
 class city_json(object):
     """
     Create CityJSON-schema objects, including building, vegetation, waterbody
-    transportation and urban patch objects.
+    transportation and urban Tile objects.
 
     More info about CityJSON can be found in 
     https://www.cityjson.org/specs/1.0.1/
     """
 
     def __init__(self, building_gdf = None , vegetation_gdf = None, 
-    waterbody_gdf = None, transportation_gdf = None, urban_tile_gdf = None):
+    waterbody_gdf = None, transportation_gdf = None, urban_Tile_gdf = None):
 
         self.building_gdf = building_gdf
         self.vegetation_gdf = vegetation_gdf
         self.waterbody_gdf = waterbody_gdf
         self.transportation_gdf = transportation_gdf
-        self.urban_tile_gdf = urban_tile_gdf
+        self.urban_Tile_gdf = urban_Tile_gdf
 
         # create an empty CityModel
         self.cm = cityjson.CityJSON()
 
 
-    def create_building_object(self):
+    def create_building_object(self, lod=1):
         """
         Create CityJSON objects for all buildings
         Main class variable: self.building_gdf, self.cm
@@ -36,7 +37,7 @@ class city_json(object):
         -------
         cm : cityjson.CityJSON
         """
-        
+        print("Building")
         # Create a CityJSON object for each building
         for b_index in range(len(self.building_gdf)):
             
@@ -46,11 +47,19 @@ class city_json(object):
             temp_gdf = self.building_gdf.set_index(self.building_gdf["osmscID"])
             attr_dict= json.loads(temp_gdf.to_json())
 
-            b_attrs = attr_dict['features'][b_index]['properties']
-            buildingObject.attributes = b_attrs
+            # Add OSM tags
+            if "tags" in list(self.building_gdf.columns):
+                original_attr = attr_dict["features"][b_index]["properties"]
+                osm_tag = {"osm" + str(key): val for key, val in original_attr["tags"].items()}
+                del original_attr["tags"]
+                original_attr.update(osm_tag)
+            else:
+                original_attr = attr_dict['features'][b_index]['properties']
+
+            buildingObject.attributes = original_attr
 
             #######################################Geometry############################
-            b_geom = Geometry(type='Solid', lod=1)
+            b_geom = Geometry(type='Solid', lod=lod)
 
             building_height = float(self.building_gdf.iloc[b_index].Building_height)
             building_poly = self.building_gdf.iloc[b_index].geometry
@@ -96,6 +105,15 @@ class city_json(object):
             b_bdry =  [[top_sur],[bottom_sur]] + side_sur 
             b_geom.boundaries.append(b_bdry)
 
+            if lod > 1:
+                # Revised-2023-4-30 
+                # Only for LoD1 building surface semantics
+                side_index_list = side_index_list = [[0,i+2] for i in range(len(b_bdry)-2)] # [[0,2], [0,3], [0,4], [0,5]]
+
+                b_geom.surfaces[0] = {'surface_idx': [[0,0]], 'type': 'RoofSurface'}
+                b_geom.surfaces[1] = {'surface_idx': [[0,1]], 'type': 'GroundSurface'}
+                b_geom.surfaces[2] = {'surface_idx': side_index_list, 'type': 'WallSurface'}
+
             # Add propertries to CityJSON objects
             buildingObject.geometry.append(b_geom)
             buildingObject.type = "Building"
@@ -113,6 +131,7 @@ class city_json(object):
         -------
         cm : cityjson.CityJSON
         """
+        print("Vegetation")
         # # Create a CityJSON object for each vegetation object
         for v_index in range(len(self.vegetation_gdf)):
             
@@ -121,8 +140,16 @@ class city_json(object):
             temp_gdf = self.vegetation_gdf.set_index(self.vegetation_gdf["osmscID"])
             attr_dict= json.loads(temp_gdf.to_json())
 
-            v_attrs = attr_dict['features'][v_index]['properties']
-            vegetationObject.attributes = v_attrs
+            # Add OSM tags
+            if "tags" in list(self.vegetation_gdf.columns):
+                original_attr = attr_dict["features"][v_index]["properties"]
+                osm_tag = {"osm" + str(key): val for key, val in original_attr["tags"].items()}
+                del original_attr["tags"]
+                original_attr.update(osm_tag)
+            else:
+                original_attr = attr_dict['features'][v_index]['properties']
+
+            vegetationObject.attributes = original_attr
 
             #######################################Geometry############################
             v_geom = Geometry(type='MultiSurface', lod=0)
@@ -174,7 +201,7 @@ class city_json(object):
         -------
         cm : cityjson.CityJSON
         """
-
+        print("Waterbody")
         # Create a CityJSON object for each waterbody
         for w_index in range(len(self.waterbody_gdf)):
             
@@ -182,11 +209,18 @@ class city_json(object):
             waterbodyObject = CityObject(id= str(self.waterbody_gdf.iloc[w_index].osmscID))
             
             temp_gdf = self.waterbody_gdf.set_index(self.waterbody_gdf["osmscID"])
-            attr_dict= json.loads(temp_gdf.to_json())        
-            
+            attr_dict= json.loads(temp_gdf.to_json())   
 
-            w_attrs = attr_dict['features'][w_index]['properties']
-            waterbodyObject.attributes = w_attrs
+            # Add OSM tags
+            if "tags" in list(self.waterbody_gdf.columns):
+                original_attr = attr_dict["features"][w_index]["properties"]
+                osm_tag = {"osm" + str(key): val for key, val in original_attr["tags"].items()}
+                del original_attr["tags"]
+                original_attr.update(osm_tag)
+            else:
+                original_attr = attr_dict['features'][w_index]['properties']         
+
+            waterbodyObject.attributes = original_attr
 
             #######################################Geometry############################
             w_geom = Geometry(type='CompositeSurface', lod=0)
@@ -231,18 +265,27 @@ class city_json(object):
         -------
         cm : cityjson.CityJSON
         """
+        print("Transportation")
         # Create a CityJSON object for each transportation object
         # transportation_object refers to the street currently
         for r_index in range(len(self.transportation_gdf)):
-
             # Create empty transportation CityJSON object           
             roadObject = CityObject(id = str(self.transportation_gdf.iloc[r_index].osmscID))
             
             temp_gdf = self.transportation_gdf.set_index(self.transportation_gdf["osmscID"])
-            attr_dict= json.loads(temp_gdf.to_json())        
-            
-            r_attrs = attr_dict['features'][r_index]['properties']
-            roadObject.attributes = r_attrs
+            attr_dict= json.loads(temp_gdf.to_json())    
+
+            # Add OSM tags
+            # if "tags" in list(self.transportation_gdf.columns):
+            #     original_attr = attr_dict["features"][r_index]["properties"]
+            #     osm_tag = {"osm" + str(key): val for key, val in original_attr["tags"].items()}
+            #     del original_attr["tags"]
+            #     original_attr.update(osm_tag)
+            # else:
+            #     original_attr = attr_dict['features'][r_index]['properties']
+
+            original_attr = attr_dict['features'][r_index]['properties']
+            roadObject.attributes = original_attr
 
             #######################################Geometry############################
             r_geom = Geometry(type='CompositeSurface', lod=0)
@@ -285,40 +328,44 @@ class city_json(object):
                 pass
         return self.cm
 
-    def create_urban_tile_object(self):
+    def create_urban_Tile_object(self):
         """
-        Create CityJSON objects for all urban patch objects
-        Main class variable: self.urban_tile_gdf, self.cm
+        Create CityJSON objects for all urban Tile objects
+        Main class variable: self.urban_Tile_gdf, self.cm
 
         Returns
         -------
         cm : cityjson.CityJSON
         """
-        # Create a CityJSON object for each urban patch object
-        for u_index in range(len(self.urban_tile_gdf)):
-            # Create empty urban patch CityJSON object 
-            UrbanTileObject = CityObject(id=str(self.urban_tile_gdf.iloc[u_index].osmscID))
 
-            temp_gdf = self.urban_tile_gdf.set_index(self.urban_tile_gdf["osmscID"])
+        print("UrbanTile")
+
+        # Create a CityJSON object for each urban Tile object
+        for u_index in range(len(self.urban_Tile_gdf)):
+            # Create empty urban Tile CityJSON object 
+            urbanTileObject = CityObject(id=str(self.urban_Tile_gdf.iloc[u_index].osmscID))
+
+            temp_gdf = self.urban_Tile_gdf.set_index(self.urban_Tile_gdf["osmscID"])
             attr_dict= json.loads(temp_gdf.to_json())
 
+            # There is no OSM tag.
             u_attrs = attr_dict['features'][u_index]['properties']
-            UrbanTileObject.attributes = u_attrs
+            urbanTileObject.attributes = u_attrs
 
             #######################################Geometry############################
             u_geom = Geometry(type='CompositeSurface', lod=0)
 
-            UrbanTile_poly = self.urban_tile_gdf.iloc[u_index].geometry
+            urbanTile_poly = self.urban_Tile_gdf.iloc[u_index].geometry
             
             try:
                 # Don't consider the content of MultiPolygon at present, 
                 # and do it separately later
             
                 # Checking if vertices of polygon are in counter-clockwise 是否是逆时针
-                UrbanTile_poly_ccw = UrbanTile_poly.exterior.is_ccw
+                urbanTile_poly_ccw = urbanTile_poly.exterior.is_ccw
 
                 # Extract the point values that define the perimeter of the polygon
-                x, y = UrbanTile_poly.exterior.coords.xy
+                x, y = urbanTile_poly.exterior.coords.xy
 
                 x_list = list(x)
                 y_list = list(y)
@@ -327,7 +374,7 @@ class city_json(object):
 
                 for i in range(len(x_list)-1):
                     # The coordinates of the polygon are counterclockwise
-                    if  UrbanTile_poly_ccw:
+                    if  urbanTile_poly_ccw:
                         top_sur.append((x_list[i],y_list[i],0))
                     # The coordinates of polygon are clockwise                    
                     else:
@@ -338,10 +385,10 @@ class city_json(object):
                 u_geom.boundaries.append(u_bdry)
 
                 # Add propertries to CityJSON objects
-                UrbanTileObject.geometry.append(u_geom)
-                UrbanTileObject.type = "GenericCityObject"
+                urbanTileObject.geometry.append(u_geom)
+                urbanTileObject.type = "GenericCityObject"
 
-                self.cm.cityobjects[UrbanTileObject.id] = UrbanTileObject
+                self.cm.cityobjects[urbanTileObject.id] = urbanTileObject
                 
             except:
                 pass
@@ -357,7 +404,7 @@ class city_json(object):
         Parameters
         ----------
         gdf : geopandas.GeoDataFrame
-            mostly building_gdf and urban_tile_gdf
+            mostly building_gdf and urban_Tile_gdf
 
         Returns
         -------
@@ -371,16 +418,18 @@ class city_json(object):
 
         return gdf
 
-    def output_json(self,filename = "cityName"):
+    def output_json(self,filename = "cityName",building_lod = 1):
         """
         Output CityJSON object into a JSON file.
         Main class variable: self.building_gdf, self.vegetation_gdf, self.waterbody_gdf
-                            self.transportation_gdf, self.urban_tile_gdf, self.cm
+                            self.transportation_gdf, self.urban_Tile_gdf, self.cm
 
         Parameters
         ----------
         filename : str
             the filename to be saved in the current project location
+        building_lod : int
+            CityGML/CityJSON LoD of building objects
         """
 
 
@@ -393,45 +442,50 @@ class city_json(object):
 
         ################# Building #################
         if self.building_gdf is not None:
-            self.building_gdf = fill_nan_list_position(self.building_gdf,"within_UrbanTile")
+            self.building_gdf = fill_nan_list_position(self.building_gdf,"withinTile")
             self.building_gdf = fill_nan_list_position(self.building_gdf,"Building_height")
 
             self.building_gdf = self.drop_extra_geom(self.building_gdf)
-            self.cm = self.create_building_object()
+            self.cm = self.create_building_object(lod = building_lod)
 
         ################# Vegetation #################
         if self.vegetation_gdf is not None:
-            self.vegetation_gdf = fill_nan_list_position(self.vegetation_gdf,"within_UrbanTile")
+            self.vegetation_gdf = fill_nan_list_position(self.vegetation_gdf,"withinTile")
             self.cm = self.create_vegetation_object()       
 
         ################# Waterbody #################
         if self.vegetation_gdf is not None:
-            self.waterbody_gdf = fill_nan_list_position(self.waterbody_gdf,"within_UrbanTile")
+            self.waterbody_gdf = fill_nan_list_position(self.waterbody_gdf,"withinTile")
             self.cm = self.create_waterbody_object()
 
 
         ################# Transportation #################
         if self.transportation_gdf is not None:
+            self.transportation_gdf = fill_nan_list_position(self.transportation_gdf,"AdjacentTile")
             self.cm = self.create_transportation_object()
 
         ################# UrbanTile #################
-        if self.urban_tile_gdf is not None:
-            self.urban_tile_gdf = fill_nan_list_position(self.urban_tile_gdf, "containsVegetation")
-            self.urban_tile_gdf = fill_nan_list_position(self.urban_tile_gdf, "containsBuilding")
-            self.urban_tile_gdf = fill_nan_list_position(self.urban_tile_gdf, "containsWaterbody")
+        if self.urban_Tile_gdf is not None:
+            self.urban_Tile_gdf = fill_nan_list_position(self.urban_Tile_gdf, "containsVegetation")
+            self.urban_Tile_gdf = fill_nan_list_position(self.urban_Tile_gdf, "containsBuilding")
+            self.urban_Tile_gdf = fill_nan_list_position(self.urban_Tile_gdf, "containsWaterbody")
+            self.urban_Tile_gdf = fill_nan_list_position(self.urban_Tile_gdf, "AdjacentTransportation")
 
-            self.urban_tile_gdf = self.drop_extra_geom(self.urban_tile_gdf)
+            self.urban_Tile_gdf = self.drop_extra_geom(self.urban_Tile_gdf)
 
-            self.cm = self.create_urban_tile_object()
+            self.cm = self.create_urban_Tile_object()
 
 
         # reference_geometry
+        print("reference_geometry")
         cityobjects, vertex_lookup = self.cm.reference_geometry()    
         # multipoint multilinestring multisurface compositesurface 
         # solid multisolid compositesolid
+        print("add to json")
         self.cm.add_to_j(cityobjects,vertex_lookup)
         # cm.j["CityObjects"]
 
+        print("update bbox")
         self.cm.update_bbox()
 
         # https://www.cityjson.org/tutorials/validation/

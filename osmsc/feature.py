@@ -21,7 +21,7 @@ def add_spatial_semantics_attr(left_gdf,right_gdf,semColName, how="left", op="in
         # As for both gdf, more detail cna be found in 
         # https://automating-gis-processes.github.io/CSC18/lessons/L4/spatial-join.html
 
-    semColName : string e.g. containsBuilding or within Patch
+    semColName : string e.g. containsBuilding or within Tile
         New column name
 
     Returns
@@ -573,4 +573,11 @@ def add_gdf_elevation_features(gdf, elevation_dataset = None, data_type = None, 
     gdf["ground_elevation"] = elevation
     
     return gdf
+
+
+
+
+
+
+
 

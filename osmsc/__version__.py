@@ -1,3 +1,4 @@
 """OSMsc package version"""
-__version__ = "0.1.17"
 
+# 2023-4-30
+__version__ = "0.1.20"

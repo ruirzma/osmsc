@@ -12,6 +12,7 @@ from .geogroup import point_group, polygon_group, line_string_group
 
 #TODO logging 
 
+
 #################################################################################
 
 class building_group(polygon_group): 
@@ -172,9 +173,10 @@ class building_group(polygon_group):
         temp_gdf["Building_area"] = temp_gdf_prj["geometry"].area 
         temp_gdf["Building_perimeter"] = temp_gdf_prj["geometry"].length 
 
-        # If download building level from OSM
-        if building_levels:
-
+        # # If download building level from OSM
+        # building_level True and height False 
+        # if height is true, Building_height has already filled
+        if building_levels and not height:
             # if building_levels tags is unavailable, assume it is 1
             temp_gdf["building_levels"] = temp_gdf["building_levels"].fillna(1)
             # assume level height is 3m
@@ -484,6 +486,7 @@ class transportation_group(polygon_group):
         street_graph = street_graph_from_gdf(building_gdf)
         # Street geometry is LineString       
         street_temp_gdf = streets_from_street_graph(street_graph)
+        street_temp_gdf.crs = 'epsg:4326'
 
         # only keep user-defined trans_type
         if self.trans_type is not None: 
@@ -516,13 +519,13 @@ class transportation_group(polygon_group):
 
         return street_gdf_prj
 
-class urban_tile_group(polygon_group):
+class urban_Tile_group(polygon_group):
     """
-    Construct OSMsc urban patch objects
+    Construct OSMsc urban Tile objects
     """
     def get_gdf_prj(self):
         """
-        Construct urban patch objects
+        Construct urban Tile objects
         To define the street width, this function has to use the 
         projected coordinate system.
 
@@ -533,28 +536,28 @@ class urban_tile_group(polygon_group):
         # Download the street dataframe
         street_gdf_prj = transportation_group(bbox= self.bbox, place_name = self.place_name, trans_type= self.trans_type).get_gdf_prj()
         # Merged streets are the basis for generating blocks
-        # Rui 2022-8-15
+        # Revised 2022-8-15
         street_gdf_prj["geometry"] = street_gdf_prj["geometry"].buffer(0.001)
         street_dis_geom = street_gdf_prj.dissolve().iloc[0].geometry       
         
-        # Create urban_tile_gdf
-        urban_tile_gdf_prj = gpd.GeoDataFrame()
+        # Create urban_Tile_gdf
+        urban_Tile_gdf_prj = gpd.GeoDataFrame()
         # All streets are merged into a polygon
-        urban_tile_gdf_prj["geometry"] = list(polygonize(street_dis_geom.boundary))
+        urban_Tile_gdf_prj["geometry"] = list(polygonize(street_dis_geom.boundary))
         # delete the whole street polygon
-        urban_tile_gdf_prj = urban_tile_gdf_prj.drop(index=0)
+        urban_Tile_gdf_prj = urban_Tile_gdf_prj.drop(index=0)
         # re-index
-        urban_tile_gdf_prj.index = urban_tile_gdf_prj.index - 1
+        urban_Tile_gdf_prj.index = urban_Tile_gdf_prj.index - 1
         # set crs
-        urban_tile_gdf_prj.crs = street_gdf_prj.crs
+        urban_Tile_gdf_prj.crs = street_gdf_prj.crs
 
         # Add osmscID column
-        urban_tile_gdf_prj["osmscID"] = ["UrbanTile_"+str(i) for i in range(len(urban_tile_gdf_prj))]
+        urban_Tile_gdf_prj["osmscID"] = ["UrbanTile_"+str(i) for i in range(len(urban_Tile_gdf_prj))]
         # Add other attr columns       
-        urban_tile_gdf_prj["UrbanTile_area"] = urban_tile_gdf_prj["geometry"].area
-        urban_tile_gdf_prj["UrbanTile_perimeter"] = urban_tile_gdf_prj["geometry"].length
+        urban_Tile_gdf_prj["UrbanTile_area"] = urban_Tile_gdf_prj["geometry"].area
+        urban_Tile_gdf_prj["UrbanTile_perimeter"] = urban_Tile_gdf_prj["geometry"].length
 
-        return urban_tile_gdf_prj
+        return urban_Tile_gdf_prj
 
 
 ####### TODO More city objects in OSMsc, namely, networks and points ########
