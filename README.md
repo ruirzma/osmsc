@@ -32,7 +32,7 @@ The main contributions of OSMsc:
 
 
 
-![workflow](osmsc_workflow_v0.1.20.png "workflow")
+![workflow](osmsc_workflow_updated.png "workflow")
 <p align = "center"> OSMsc workflow</p>
 
 <div align=center>
