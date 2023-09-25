@@ -7,6 +7,7 @@ OSMsc
 ![GitHub repo size](https://img.shields.io/github/repo-size/ruirzma/osmsc?style=plastic)
 ![GitHub repo file count](https://img.shields.io/github/directory-file-count/ruirzma/osmsc?style=plastic)
 ![PyPI - License](https://img.shields.io/pypi/l/osmsc?style=plastic)
+[![codecov](https://codecov.io/gh/ni1o1/transbigdata/branch/main/graph/badge.svg?token=GLAVYYCD9L)](https://codecov.io/gh/ni1o1/transbigdata)
 
 
 *Updated September 23, 2023*
