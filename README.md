@@ -9,15 +9,13 @@ OSMsc
 ![PyPI - License](https://img.shields.io/pypi/l/osmsc?style=plastic)
 
 
-
 *Updated September 23, 2023*
 
 <font color=green size=4> This repo develops an easy-to-use Python package, named OSMsc, to improve the availability, consistency and generalizability of urban semantic data.</font>
 
-<font color=green size=4> 一款可以快速生成全球任意城市3D模型的应用，更多使用案例可在https://github.com/ruirzma/osmsc-examples 获取</font>
+<font color=green size=4> 一款可以快速生成全球任意城市3D模型的应用，更多使用案例可在https://github.com/ruirzma/osmsc-examples 获取。</font>
 
 <font size=10> **OSMsc v0.2.0 is coming!** </font>
-
 
 
 ![](abigail-keenan-RaVcslj475Y-unsplash.jpg)
