@@ -12,7 +12,7 @@ OSMsc
 
 *Updated September 23, 2023*
 
-<font color=green size=4> This repo develops an easy-to-use Python package, named OSMsc, to improve the availability, consistency and generalizability of urban semantic data.</font>
+<font color=green size=4> This repo develops an easy-to-use Python package, named OSMsc, to improve the availability, consistency and generalizability of urban semantic data.(一款可以快速生成全球任意城市3D模型的应用，更多使用案例可在https://github.com/ruirzma/osmsc-examples 获取)</font>
 
 <font size=10> **OSMsc v0.2.0 is coming!** </font>
 
@@ -26,10 +26,10 @@ Photo by <a href="https://unsplash.com/@akeenster?utm_source=unsplash&utm_medium
 
 
 The main contributions of OSMsc:
-* Construct semantic city objects based on the public dataset (OpenStreetMap), and apply geometric operations to build more complete city objects;
-* Fuse 3D and tag information from multiple data sources through the spatial analysis between OSMsc layers and other non-OSM data layers;
-* Propose the semantic connector(UrbanTile), and supplement the spatial semantics;
-* Output the CityJSON-formatted semantic city models.
+* Construct semantic city objects based on the public dataset (OpenStreetMap), and apply geometric operations to build more complete city objects （内部集成了OSM数据的自动化下载，仅需几行简单的代码，即可完成城市对象的构建）;
+* Fuse 3D and tag information from multiple data sources through the spatial analysis between OSMsc layers and other non-OSM data layers （轻松融合外部3D或者文本数据，丰富OSM城市对象的语义）;
+* Propose the semantic connector(UrbanTile), and supplement the spatial semantics （城市模型内部的对象可以添加空间语义，彼此的空间关系可以查询或者推测出来）;
+* Output the CityJSON-formatted semantic city models （可以输出CityJSON或者html的可视化文件，CityJSON格式文件可以由https://ninja.cityjson.org 查看）.
 
 
 
