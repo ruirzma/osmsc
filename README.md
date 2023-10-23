@@ -70,6 +70,26 @@ Note:
 
 [OSMsc demonstration notebooks](https://github.com/ruirzma/osmsc/tree/main/examples)
 
+
+## Citation
+If you use OSMsc in scientific work, I kindly ask you to cite it:
+
+```bibtex
+@article{doi:10.1080/13658816.2023.2266824,
+author = {Rui Ma, Jiayu Chen, Chendi Yang and Xin Li},
+title = {OSMsc: a framework for semantic 3D city modeling using OpenStreetMap},
+journal = {International Journal of Geographical Information Science},
+volume = {0},
+number = {0},
+pages = {1-26},
+year = {2023},
+publisher = {Taylor & Francis},
+doi = {10.1080/13658816.2023.2266824},
+URL = {https://doi.org/10.1080/13658816.2023.2266824},
+eprint = {https://doi.org/10.1080/13658816.2023.2266824}}
+```
+
+
 ### Reference
     1. Geoff Boeing, OSMnx, https://github.com/gboeing/osmnx
     2. Nick Bristow, OSMuf, https://github.com/AtelierLibre/osmuf
